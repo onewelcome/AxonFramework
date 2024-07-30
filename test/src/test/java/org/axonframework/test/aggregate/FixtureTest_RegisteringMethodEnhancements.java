@@ -17,18 +17,19 @@
 package org.axonframework.test.aggregate;
 
 import org.axonframework.messaging.Message;
+import org.axonframework.messaging.MessageStream;
 import org.axonframework.messaging.annotation.HandlerDefinition;
 import org.axonframework.messaging.annotation.HandlerEnhancerDefinition;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
 import org.axonframework.messaging.annotation.ParameterResolver;
 import org.axonframework.messaging.annotation.ParameterResolverFactory;
+import org.axonframework.messaging.unitofwork.ProcessingContext;
 import org.junit.jupiter.api.*;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
@@ -113,12 +114,12 @@ public class FixtureTest_RegisteringMethodEnhancements {
         }
 
         @Override
-        public AtomicBoolean resolveParameterValue(Message<?> message) {
+        public AtomicBoolean resolveParameterValue(Message<?> message, ProcessingContext processingContext) {
             return assertion;
         }
 
         @Override
-        public boolean matches(Message<?> message) {
+        public boolean matches(Message<?> message, ProcessingContext processingContext) {
             return message.getPayloadType().isAssignableFrom(ResolveParameterCommand.class);
         }
     }
@@ -135,7 +136,7 @@ public class FixtureTest_RegisteringMethodEnhancements {
         public <T> Optional<MessageHandlingMember<T>> createHandler(@Nonnull Class<T> declaringType,
                                                                     @Nonnull Method method,
                                                                     @Nonnull ParameterResolverFactory parameterResolverFactory,
-                                                                    Function<Object, CompletableFuture<?>> returnTypeConverter) {
+                                                                    Function<Object, MessageStream<?>> returnTypeConverter) {
             assertion.set(true);
             // We do not care about a specific MessageHandlingMember,
             //  only that this method is called to ensure its part of the FixtureConfiguration.

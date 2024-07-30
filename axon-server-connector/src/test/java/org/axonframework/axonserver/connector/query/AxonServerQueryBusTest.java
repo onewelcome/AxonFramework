@@ -304,7 +304,7 @@ class AxonServerQueryBusTest {
         assertNotNull(result);
         verify(mockQueryChannel).registerQueryHandler(any(), eq(new QueryDefinition(TEST_QUERY, String.class)));
 
-        result.close();
+        result.cancel();
         verify(registration).cancel();
     }
 
@@ -433,7 +433,7 @@ class AxonServerQueryBusTest {
     @Test
     void handlerInterceptorRegisteredWithLocalSegment() {
         MessageHandlerInterceptor<QueryMessage<?, ?>> interceptor =
-                (unitOfWork, interceptorChain) -> interceptorChain.proceed();
+                (unitOfWork, interceptorChain) -> interceptorChain.proceedSync();
 
         testSubject.registerHandlerInterceptor(interceptor);
 
@@ -495,7 +495,7 @@ class AxonServerQueryBusTest {
                 ));
         Mono<QueryResponseMessage<String>> initialResult = queryResult.initialResult();
         Flux<SubscriptionQueryUpdateMessage<String>> updates = queryResult.updates();
-        queryResult.close();
+        queryResult.cancel();
 
         StepVerifier.create(initialResult)
                     .expectNextMatches(r -> r.getPayload().equals("Hello world"))
@@ -517,7 +517,7 @@ class AxonServerQueryBusTest {
                 ));
         Mono<QueryResponseMessage<String>> initialResult = queryResult.initialResult();
         Flux<SubscriptionQueryUpdateMessage<String>> updates = queryResult.updates();
-        queryResult.close();
+        queryResult.cancel();
 
         StepVerifier.create(initialResult.map(Message::getPayload))
                     .verifyError();
@@ -582,7 +582,7 @@ class AxonServerQueryBusTest {
         // We create a subscription to force a registration for this type of query.
         // It doesn't get invoked because the localSegment is mocked
         //noinspection resource
-        testSubject.subscribe("testQuery", String.class, (MessageHandler<QueryMessage<?, String>>) message -> "ok");
+        testSubject.subscribe("testQuery", String.class, (MessageHandler<QueryMessage<?, String>, QueryResponseMessage<?>>) message -> "ok");
         assertWithin(1, TimeUnit.SECONDS, () -> assertNotNull(queryHandlerRef.get()));
 
         QueryHandler queryHandler = queryHandlerRef.get();

@@ -17,8 +17,11 @@
 package org.axonframework.test.utils;
 
 import org.axonframework.commandhandling.CommandMessage;
+import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.GenericCommandMessage;
+import org.axonframework.messaging.Message;
 import org.axonframework.messaging.MessageHandler;
+import org.axonframework.messaging.unitofwork.ProcessingContext;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
@@ -38,16 +41,15 @@ class RecordingCommandBusTest {
     }
 
     @Test
-    void publishCommand() {
-        testSubject.dispatch(GenericCommandMessage.asCommandMessage("First"));
-        testSubject.dispatch(GenericCommandMessage.asCommandMessage("Second"),
-                             (commandMessage, commandResultMessage) -> {
-                                 if (commandResultMessage.isExceptional()) {
-                                     fail("Didn't expect handling to fail");
-                                 }
-                                 assertNull(commandResultMessage.getPayload(),
-                                         "Expected default callback behavior to invoke onResult(null)");
-                             });
+    void publishCommand() throws Exception {
+        testSubject.dispatch(GenericCommandMessage.asCommandMessage("First"), ProcessingContext.NONE);
+        var result = testSubject.dispatch(GenericCommandMessage.asCommandMessage("Second"), ProcessingContext.NONE);
+        Message<?> commandResultMessage = result.get();
+        if (commandResultMessage instanceof CommandResultMessage cmr && cmr.isExceptional()) {
+            fail("Didn't expect handling to fail");
+        }
+        assertNull(commandResultMessage.getPayload(),
+                   "Expected default callback behavior to invoke onResult(null)");
         List<CommandMessage<?>> actual = testSubject.getDispatchedCommands();
         assertEquals(2, actual.size());
         assertEquals("First", actual.get(0).getPayload());
@@ -55,16 +57,16 @@ class RecordingCommandBusTest {
     }
 
     @Test
-    void publishCommandWithCallbackBehavior() {
+    void publishCommandWithCallbackBehavior() throws Exception {
         testSubject.setCallbackBehavior((commandPayload, commandMetaData) -> "callbackResult");
-        testSubject.dispatch(GenericCommandMessage.asCommandMessage("First"));
-        testSubject.dispatch(GenericCommandMessage.asCommandMessage("Second"),
-                             (commandMessage, commandResultMessage) -> {
-                                 if (commandResultMessage.isExceptional()) {
-                                    fail("Didn't expect handling to fail");
-                                 }
-                                 assertEquals("callbackResult", commandResultMessage.getPayload());
-                             });
+        testSubject.dispatch(GenericCommandMessage.asCommandMessage("First"), ProcessingContext.NONE);
+        var commandResultMessage = testSubject.dispatch(GenericCommandMessage.asCommandMessage("Second"),
+                                                        ProcessingContext.NONE)
+                                              .get();
+        if (commandResultMessage instanceof CommandResultMessage cmr && cmr.isExceptional()) {
+            fail("Didn't expect handling to fail");
+        }
+        assertEquals("callbackResult", commandResultMessage.getPayload());
         List<CommandMessage<?>> actual = testSubject.getDispatchedCommands();
         assertEquals(2, actual.size());
         assertEquals("First", actual.get(0).getPayload());
@@ -73,7 +75,7 @@ class RecordingCommandBusTest {
 
     @Test
     void registerHandler() {
-        MessageHandler<? super CommandMessage<?>> handler = command -> {
+        MessageHandler<CommandMessage<?>, CommandResultMessage<?>> handler = command -> {
             fail("Did not expect handler to be invoked");
             return null;
         };

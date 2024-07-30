@@ -16,12 +16,14 @@
 
 package org.axonframework.messaging.annotation;
 
+import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.Message;
+import org.axonframework.messaging.MessageStream;
+import org.axonframework.messaging.unitofwork.ProcessingContext;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -59,10 +61,12 @@ public interface MessageHandlingMember<T> {
     /**
      * Checks if this handler is capable of handling the given {@code message}.
      *
-     * @param message The message that is to be handled
+     * @param message           The message that is to be handled
+     * @param processingContext
      * @return {@code true} if the handler is capable of handling the message, {@code false} otherwise
      */
-    boolean canHandle(@Nonnull Message<?> message);
+    // TODO - ProcessingContext should eventually become non-null when canHandle for event handlers is based on fully-qualified message name only
+    boolean canHandle(@Nonnull Message<?> message, @Nullable ProcessingContext processingContext);
 
     /**
      * Checks if this handler is capable of handling messages with the given {@code payloadType}.
@@ -101,12 +105,14 @@ public interface MessageHandlingMember<T> {
     @Deprecated
     Object handleSync(@Nonnull Message<?> message, @Nullable T target) throws Exception;
 
-    default CompletableFuture<?> handle(@Nonnull Message<?> message, @Nullable T target) {
+    default MessageStream<?> handle(@Nonnull Message<?> message,
+                                    @Nonnull ProcessingContext processingContext,
+                                    @Nullable T target) {
         try {
             // TODO: 24-11-2023 proper impl
-            return CompletableFuture.completedFuture(handleSync(message, target));
+            return MessageStream.just(GenericMessage.asMessage(handleSync(message, target)));
         } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
+            return MessageStream.failed(e);
         }
     }
 

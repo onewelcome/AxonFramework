@@ -39,7 +39,7 @@ class ConfigurationParameterResolverFactoryTest {
     @BeforeEach
     void setUp() throws Exception {
         configuration = mock(Configuration.class);
-        commandBus = SimpleCommandBus.builder().build();
+        commandBus = new SimpleCommandBus();
         when(configuration.getComponent(CommandBus.class)).thenReturn(commandBus);
         testSubject = new ConfigurationParameterResolverFactory(configuration);
 
@@ -58,7 +58,7 @@ class ConfigurationParameterResolverFactoryTest {
     void configurationContainsRequestedParameter() {
         ParameterResolver<?> actual = testSubject.createInstance(method, parameters, 1);
         assertNotNull(actual);
-        assertSame(commandBus, actual.resolveParameterValue(new GenericMessage<>("test")));
+        assertSame(commandBus, actual.resolveParameterValue(new GenericMessage<>("test"), null));
 
         verify(configuration).getComponent(CommandBus.class);
     }

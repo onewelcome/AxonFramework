@@ -16,6 +16,9 @@
 
 package org.axonframework.queryhandling.annotation;
 
+import org.axonframework.messaging.GenericMessage;
+import org.axonframework.messaging.Message;
+import org.axonframework.messaging.MessageStream;
 import org.axonframework.messaging.annotation.AnnotatedMessageHandlingMemberDefinition;
 import org.axonframework.messaging.annotation.ClasspathParameterResolverFactory;
 import org.axonframework.messaging.annotation.MessageHandlingMember;
@@ -69,7 +72,7 @@ class MethodQueryMessageHandlerDefinitionTest {
         GenericQueryMessage<String, String> message =
                 new GenericQueryMessage<>("mock", ResponseTypes.instanceOf(String.class));
 
-        assertTrue(handler.canHandle(message));
+        assertTrue(handler.canHandle(message, null));
 
         Object invocationResult = handler.handleSync(message, this);
         assertNull(invocationResult);
@@ -96,10 +99,10 @@ class MethodQueryMessageHandlerDefinitionTest {
 
     // TODO This local static function should be replaced with a dedicated interface that converts types.
     // TODO However, that's out of the scope of the unit-of-rework branch and thus will be picked up later.
-    private static CompletableFuture<Object> returnTypeConverter(Object result) {
+    private static MessageStream<Message<Object>> returnTypeConverter(Object result) {
         return result instanceof CompletableFuture<?>
-                ? (CompletableFuture<Object>) result
-                : CompletableFuture.completedFuture(result);
+                ? MessageStream.fromFuture(((CompletableFuture<?>) result).thenApply(GenericMessage::asMessage))
+                : MessageStream.just(GenericMessage.asMessage(result));
     }
 
     private <R> QueryHandlingMember<R> messageHandler(String methodName) {

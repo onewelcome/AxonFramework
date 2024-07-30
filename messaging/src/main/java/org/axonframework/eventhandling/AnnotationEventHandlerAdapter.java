@@ -95,11 +95,11 @@ public class AnnotationEventHandlerAdapter implements EventMessageHandler {
     public Object handleSync(EventMessage<?> event) throws Exception {
         Optional<MessageHandlingMember<? super Object>> handler =
                 inspector.getHandlers(listenerType)
-                         .filter(h -> h.canHandle(event))
+                         .filter(h -> h.canHandle(event, null))
                          .findFirst();
         if (handler.isPresent()) {
             MessageHandlerInterceptorMemberChain<Object> interceptor = inspector.chainedInterceptor(listenerType);
-            return interceptor.handle(event, annotatedEventListener, handler.get());
+            return interceptor.handleSync(event, annotatedEventListener, handler.get());
         }
         return null;
     }
@@ -121,7 +121,7 @@ public class AnnotationEventHandlerAdapter implements EventMessageHandler {
     @Override
     public boolean canHandle(EventMessage<?> event) {
         return inspector.getHandlers(listenerType)
-                        .anyMatch(h -> h.canHandle(event));
+                        .anyMatch(h -> h.canHandle(event, null));
     }
 
     @Override
@@ -137,21 +137,22 @@ public class AnnotationEventHandlerAdapter implements EventMessageHandler {
     }
 
     @Override
-    public void prepareReset() {
-        prepareReset(null);
+    public void prepareReset(ProcessingContext processingContext) {
+        prepareReset(null, null);
     }
 
     @Override
-    public <R> void prepareReset(R resetContext) {
+    public <R> void prepareReset(R resetContext, ProcessingContext processingContext) {
         try {
             ResetContext<?> resetMessage = GenericResetContext.asResetContext(resetContext);
-            Optional<MessageHandlingMember<? super Object>> handler =
-                    inspector.getHandlers(listenerType)
-                             .filter(h -> h.canHandle(resetMessage))
-                             .findFirst();
-            if (handler.isPresent()) {
-                handler.get().handleSync(resetMessage, annotatedEventListener);
-            }
+            inspector.getHandlers(listenerType)
+                     .filter(h -> h.canHandle(resetMessage, processingContext))
+                     .findFirst()
+                     .ifPresent(messageHandlingMember -> messageHandlingMember.handle(resetMessage,
+                                                                                      processingContext,
+                                                                                      annotatedEventListener)
+                                                                              .asCompletableFuture()
+                                                                              .join());
         } catch (Exception e) {
             throw new ResetNotSupportedException("An Error occurred while notifying handlers of the reset", e);
         }

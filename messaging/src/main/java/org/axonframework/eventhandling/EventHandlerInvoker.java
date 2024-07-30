@@ -16,6 +16,8 @@
 
 package org.axonframework.eventhandling;
 
+import org.axonframework.messaging.unitofwork.ProcessingContext;
+
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
@@ -30,8 +32,8 @@ import javax.annotation.Nullable;
 public interface EventHandlerInvoker {
 
     /**
-     * Check whether or not this invoker has handlers that can handle the given {@code eventMessage} for a given {@code
-     * segment}.
+     * Check whether or not this invoker has handlers that can handle the given {@code eventMessage} for a given
+     * {@code segment}.
      *
      * @param eventMessage The message to be processed
      * @param segment      The segment for which the event handler should be invoked
@@ -62,9 +64,12 @@ public interface EventHandlerInvoker {
      * @throws Exception when an exception occurs while handling the message
      */
     @Deprecated
-    void handleSync(@Nonnull EventMessage<?> message, @Nonnull Segment segment) throws Exception;
+    void handleSync(@Nonnull EventMessage<?> message,
+                    @Nonnull Segment segment) throws Exception;
 
-    default CompletableFuture<Void> handle(@Nonnull EventMessage<?> message, @Nonnull Segment segment) {
+    default CompletableFuture<Void> handle(@Nonnull EventMessage<?> message,
+                                           @Nonnull ProcessingContext processingContext,
+                                           @Nonnull Segment segment) {
         try {
             // TODO: 17-11-2023 proper impl
             handleSync(message, segment);
@@ -86,18 +91,19 @@ public interface EventHandlerInvoker {
     /**
      * Performs any activities that are required to reset the state managed by handlers assigned to this invoker.
      */
-    default void performReset() {
+    default void performReset(ProcessingContext processingContext) {
     }
 
     /**
      * Performs any activities that are required to reset the state managed by handlers assigned to this invoker.
      *
-     * @param resetContext a {@code R} used to support the reset operation
-     * @param <R>          the type of the provided {@code resetContext}
+     * @param <R>               the type of the provided {@code resetContext}
+     * @param resetContext      a {@code R} used to support the reset operation
+     * @param processingContext
      */
-    default <R> void performReset(@Nullable R resetContext) {
+    default <R> void performReset(@Nullable R resetContext, ProcessingContext processingContext) {
         if (Objects.isNull(resetContext)) {
-            performReset();
+            performReset(processingContext);
         } else {
             throw new UnsupportedOperationException(
                     "EventHandlerInvoker#performRest(R) is not implemented for a non-null reset context."

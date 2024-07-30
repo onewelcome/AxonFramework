@@ -177,7 +177,7 @@ public class TrackingEventProcessor extends AbstractEventProcessor implements St
                     }
                 });
             }
-            return interceptorChain.proceed();
+            return interceptorChain.proceedSync();
         });
     }
 
@@ -682,6 +682,7 @@ public class TrackingEventProcessor extends AbstractEventProcessor implements St
         Assert.state(supportsReset(), () -> "The handlers assigned to this Processor do not support a reset");
         Assert.state(!isRunning() && activeProcessorThreads() == 0 && !workLauncherRunning.get(),
                      () -> "TrackingProcessor must be shut down before triggering a reset");
+        // TODO - Create a ProcessingContext instead of just a transactionManager
         transactionManager.executeInTransaction(() -> {
             int[] segments = tokenStore.fetchSegments(getName());
             TrackingToken[] tokens = new TrackingToken[segments.length];
@@ -689,7 +690,7 @@ public class TrackingEventProcessor extends AbstractEventProcessor implements St
                 tokens[i] = tokenStore.fetchToken(getName(), segments[i]);
             }
             // we now have all tokens, hurray
-            eventHandlerInvoker().performReset(resetContext);
+            eventHandlerInvoker().performReset(resetContext, null);
 
             for (int i = 0; i < tokens.length; i++) {
                 tokenStore.storeTokenSync(ReplayToken.createReplayToken(tokens[i], startPosition, resetContext),

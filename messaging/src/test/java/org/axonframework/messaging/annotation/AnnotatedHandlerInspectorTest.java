@@ -20,7 +20,10 @@ import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.eventhandling.EventMessage;
+import org.axonframework.messaging.GenericMessage;
 import org.axonframework.messaging.InterceptorChain;
+import org.axonframework.messaging.Message;
+import org.axonframework.messaging.MessageStream;
 import org.axonframework.messaging.interceptors.MessageHandlerInterceptor;
 import org.axonframework.utils.MockException;
 import org.junit.jupiter.api.*;
@@ -66,10 +69,10 @@ class AnnotatedHandlerInspectorTest {
 
     // TODO This local static function should be replaced with a dedicated interface that converts types.
     // TODO However, that's out of the scope of the unit-of-rework branch and thus will be picked up later.
-    private static CompletableFuture<Object> returnTypeConverter(Object result) {
+    private static MessageStream<Message<Object>> returnTypeConverter(Object result) {
         return result instanceof CompletableFuture<?>
-                ? (CompletableFuture<Object>) result
-                : CompletableFuture.completedFuture(result);
+                ? MessageStream.fromFuture(((CompletableFuture<?>) result).thenApply(GenericMessage::asMessage))
+                : MessageStream.just(GenericMessage.asMessage(result));
     }
 
     @Test
@@ -181,8 +184,8 @@ class AnnotatedHandlerInspectorTest {
         Optional<MessageHandlingMember<? super A>> optionalHandler = inspector.getHandlers(pA.class).findFirst();
         assertTrue(optionalHandler.isPresent());
         MessageHandlingMember<? super A> resultHandler = optionalHandler.get();
-        chain.handle(testEvent, testTarget, resultHandler);
-        assertThrows(MockException.class, () -> chain.handle(testEventTwo, testTarget, resultHandler));
+        chain.handleSync(testEvent, testTarget, resultHandler);
+        assertThrows(MockException.class, () -> chain.handleSync(testEventTwo, testTarget, resultHandler));
     }
 
     @Test
