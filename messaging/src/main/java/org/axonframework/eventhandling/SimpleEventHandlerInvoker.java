@@ -109,7 +109,6 @@ public class SimpleEventHandlerInvoker implements EventHandlerInvoker {
 
     @Override
     public void handleSync(@Nonnull EventMessage<?> message,
-                           @Nonnull ProcessingContext processingContext,
                            @Nonnull Segment segment) throws Exception {
         if (!sequencingPolicyMatchesSegment(message, segment)) {
             return;
@@ -292,7 +291,7 @@ public class SimpleEventHandlerInvoker implements EventHandlerInvoker {
 
         /**
          * Sets the {@link SequencingPolicy} in charge of deciding whether a given event should be handled (through
-         * {@link EventHandlerInvoker#handleSync(EventMessage, ProcessingContext, Segment)}) by the given {@link Segment}.
+         * {@link EventHandlerInvoker#handleSync(EventMessage, Segment)}) by the given {@link Segment}.
          * Used when this {@link EventHandlerInvoker} is invoked for multiple Segments (i.e. using parallel processing).
          * Defaults to a {@link SequentialPerAggregatePolicy},
          *

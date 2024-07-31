@@ -16,6 +16,7 @@
 
 package org.axonframework.eventhandling;
 
+import org.axonframework.messaging.unitofwork.ProcessingContext;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
@@ -74,20 +75,22 @@ class MultiEventHandlerInvokerTest {
     }
 
     @Test
-    void handleCallsCanHandleAndHandleOfAllDelegates() throws Exception {
-        testSubject.handleSync(testEventMessage, null, testSegment);
+    void handleCallsCanHandleAndHandleOfAllDelegates() {
+        testSubject.handle(testEventMessage, ProcessingContext.NONE, testSegment);
 
         verify(mockedEventHandlerInvokerOne).canHandle(testEventMessage, testSegment);
-        verify(mockedEventHandlerInvokerOne).handleSync(testEventMessage, null, testSegment);
+        verify(mockedEventHandlerInvokerOne).handle(testEventMessage, ProcessingContext.NONE, testSegment);
         verify(mockedEventHandlerInvokerTwo).canHandle(testEventMessage, testSegment);
-        verify(mockedEventHandlerInvokerTwo).handleSync(testEventMessage, null, testSegment);
+        verify(mockedEventHandlerInvokerTwo).handle(testEventMessage, ProcessingContext.NONE, testSegment);
     }
 
     @Test
-    void handleThrowsExceptionIfDelegatesThrowAnException() throws Exception {
-        doThrow(new RuntimeException()).when(mockedEventHandlerInvokerTwo).handleSync(testEventMessage, null, testSegment);
+    void handleThrowsExceptionIfDelegatesThrowAnException() {
+        doThrow(new RuntimeException()).when(mockedEventHandlerInvokerTwo)
+                                       .handle(testEventMessage, ProcessingContext.NONE, testSegment);
 
-        assertThrows(RuntimeException.class, () -> testSubject.handleSync(testEventMessage, null, testSegment));
+        assertThrows(RuntimeException.class,
+                     () -> testSubject.handle(testEventMessage, ProcessingContext.NONE, testSegment));
     }
 
     @Test
@@ -139,20 +142,20 @@ class MultiEventHandlerInvokerTest {
     }
 
     @Test
-    void invokersNotSupportingResetDoNotReceiveRedeliveries() throws Exception {
+    void invokersNotSupportingResetDoNotReceiveRedeliveries() {
         when(mockedEventHandlerInvokerOne.supportsReset()).thenReturn(true);
         when(mockedEventHandlerInvokerTwo.supportsReset()).thenReturn(false);
 
         assertTrue(testSubject.canHandle(testEventMessage, testSegment));
-        testSubject.handleSync(testEventMessage, null, testSegment);
-        testSubject.handleSync(replayMessage, null, testSegment);
+        testSubject.handle(testEventMessage, ProcessingContext.NONE, testSegment);
+        testSubject.handle(replayMessage, ProcessingContext.NONE, testSegment);
 
         InOrder inOrder = inOrder(mockedEventHandlerInvokerOne, mockedEventHandlerInvokerTwo);
-        inOrder.verify(mockedEventHandlerInvokerOne).handleSync(testEventMessage, null, testSegment);
-        inOrder.verify(mockedEventHandlerInvokerTwo).handleSync(testEventMessage, null, testSegment);
-        inOrder.verify(mockedEventHandlerInvokerOne).handleSync(replayMessage, null, testSegment);
+        inOrder.verify(mockedEventHandlerInvokerOne).handle(testEventMessage, ProcessingContext.NONE, testSegment);
+        inOrder.verify(mockedEventHandlerInvokerTwo).handle(testEventMessage, ProcessingContext.NONE, testSegment);
+        inOrder.verify(mockedEventHandlerInvokerOne).handle(replayMessage, ProcessingContext.NONE, testSegment);
 
-        verify(mockedEventHandlerInvokerTwo, never()).handleSync(eq(replayMessage), isNull(), any());
+        verify(mockedEventHandlerInvokerTwo, never()).handle(eq(replayMessage), eq(ProcessingContext.NONE), any());
     }
 
     @Test

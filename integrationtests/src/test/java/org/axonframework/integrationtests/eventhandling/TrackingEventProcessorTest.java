@@ -1207,7 +1207,7 @@ class TrackingEventProcessorTest {
         doAnswer(i -> {
             firstRun.add(i.<TrackedEventMessage<?>>getArgument(0).trackingToken());
             return null;
-        }).when(eventHandlerInvoker).handleSync(any(), any(), any());
+        }).when(eventHandlerInvoker).handle(any(), any(), any());
 
         testSubject.start();
         assertWithin(1, TimeUnit.SECONDS, () -> assertEquals(4, firstRun.size()));
@@ -1216,7 +1216,7 @@ class TrackingEventProcessorTest {
         doAnswer(i -> {
             replayRun.add(i.<TrackedEventMessage<?>>getArgument(0).trackingToken());
             return null;
-        }).when(eventHandlerInvoker).handleSync(any(), any(), any());
+        }).when(eventHandlerInvoker).handle(any(), any(), any());
 
         testSubject.resetTokens();
         testSubject.start();
@@ -2045,7 +2045,7 @@ class TrackingEventProcessorTest {
             cdl.countDown();
             Thread.sleep(100);
             return i.callRealMethod();
-        }).when(eventHandlerInvoker).handleSync(any(), any(), any());
+        }).when(eventHandlerInvoker).handle(any(), any(), any());
         testSubject.start();
         assertWithin(1, TimeUnit.SECONDS, () -> assertFalse(testSubject.processingStatus().isEmpty()));
 

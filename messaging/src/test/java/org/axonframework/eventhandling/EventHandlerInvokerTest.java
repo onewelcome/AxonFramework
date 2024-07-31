@@ -19,6 +19,7 @@ package org.axonframework.eventhandling;
 import org.axonframework.messaging.unitofwork.ProcessingContext;
 import org.junit.jupiter.api.*;
 
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,9 +40,16 @@ class EventHandlerInvokerTest {
 
         @Override
         public void handleSync(@Nonnull EventMessage<?> message,
-                               @Nonnull ProcessingContext processingContext,
                                @Nonnull Segment segment) throws Exception {
             // Do nothing
+        }
+
+        @Override
+        public CompletableFuture<Void> handle(@Nonnull EventMessage<?> message,
+                                        @Nonnull ProcessingContext processingContext,
+                                        @Nonnull Segment segment) {
+            // Do nothing
+            return CompletableFuture.completedFuture(null);
         }
     });
 

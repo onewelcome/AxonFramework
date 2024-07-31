@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
 /**
@@ -88,13 +89,23 @@ public class MultiEventHandlerInvoker implements EventHandlerInvoker {
 
     @Override
     public void handleSync(@Nonnull EventMessage<?> message,
-                           @Nonnull ProcessingContext processingContext,
                            @Nonnull Segment segment) throws Exception {
         for (EventHandlerInvoker i : delegates) {
             if (canHandle(i, message, segment)) {
-                i.handleSync(message, processingContext, segment);
+                i.handleSync(message, segment);
             }
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> handle(@Nonnull EventMessage<?> message,
+                                          @Nonnull ProcessingContext processingContext,
+                                          @Nonnull Segment segment) {
+        return delegates().stream()
+                          .filter(ehi -> canHandle(message, segment))
+                          .map(ehi -> ehi.handle(message, processingContext, segment))
+                          .reduce(CompletableFuture::allOf)
+                          .orElse(CompletableFuture.completedFuture(null));
     }
 
     @Override

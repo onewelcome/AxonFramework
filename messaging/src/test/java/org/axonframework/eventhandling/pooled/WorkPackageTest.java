@@ -30,6 +30,7 @@ import org.axonframework.eventhandling.TrackingToken;
 import org.axonframework.eventhandling.tokenstore.TokenStore;
 import org.axonframework.eventhandling.tokenstore.inmemory.InMemoryTokenStore;
 import org.axonframework.messaging.unitofwork.CurrentUnitOfWork;
+import org.axonframework.messaging.unitofwork.ProcessingContext;
 import org.axonframework.messaging.unitofwork.UnitOfWork;
 import org.axonframework.utils.DelegateScheduledExecutorService;
 import org.junit.jupiter.api.*;
@@ -567,7 +568,9 @@ class WorkPackageTest {
         }
 
         @Override
-        public CompletableFuture<Void> handle(@Nonnull EventMessage<?> message, @Nonnull Segment segment) {
+        public CompletableFuture<Void> handle(@Nonnull EventMessage<?> message,
+                                              @Nonnull ProcessingContext processingContext,
+                                              @Nonnull Segment segment) {
             if (batchProcessorPredicate.test(Collections.singletonList(message))) {
                 processedEvents.add(message);
             }

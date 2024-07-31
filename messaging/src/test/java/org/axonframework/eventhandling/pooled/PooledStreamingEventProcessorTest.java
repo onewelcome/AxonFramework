@@ -237,7 +237,7 @@ class PooledStreamingEventProcessorTest {
                     countDownLatch.countDown();
                     return null;
                 }
-        ).when(stubEventHandler).handleSync(any(), any(), any());
+        ).when(stubEventHandler).handle(any(), any(), any());
 
         List<EventMessage<Integer>> events = IntStream.range(0, 8)
                                                       .mapToObj(GenericEventMessage::new)
@@ -274,7 +274,7 @@ class PooledStreamingEventProcessorTest {
                     countDownLatch.countDown();
                     return null;
                 }
-        ).when(stubEventHandler).handleSync(any(),any(), any());
+        ).when(stubEventHandler).handle(any(),any(), any());
 
         List<EventMessage<Integer>> events = IntStream.range(0, 8)
                                                       .mapToObj(GenericEventMessage::new)
@@ -355,7 +355,7 @@ class PooledStreamingEventProcessorTest {
     }
 
     @Test
-    void exceptionWhileHandlingEventAbortsWorker() throws Exception {
+    void exceptionWhileHandlingEventAbortsWorker() {
         List<EventMessage<Integer>> events = Stream.of(1, 2, 2, 4, 5)
                                                    .map(GenericEventMessage::new)
                                                    .collect(Collectors.toList());
@@ -363,7 +363,7 @@ class PooledStreamingEventProcessorTest {
         doThrow(new RuntimeException("Simulating worker failure"))
                 .doNothing()
                 .when(stubEventHandler)
-                .handleSync(argThat(em -> em.getIdentifier().equals(events.get(2).getIdentifier())), any(), any());
+                .handle(argThat(em -> em.getIdentifier().equals(events.get(2).getIdentifier())), any(), any());
 
         testSubject.start();
 
@@ -376,7 +376,7 @@ class PooledStreamingEventProcessorTest {
 
         assertWithin(1, TimeUnit.SECONDS, () -> {
             try {
-                verify(stubEventHandler).handleSync(
+                verify(stubEventHandler).handle(
                         argThat(em -> em.getIdentifier().equals(events.get(2).getIdentifier())),
                         any(),
                         argThat(s -> s.getSegmentId() == events.get(2).getPayload())
@@ -444,7 +444,7 @@ class PooledStreamingEventProcessorTest {
     }
 
     @Test
-    void eventsWhichMustBeIgnoredAreNotHandledOnlyValidated() throws Exception {
+    void eventsWhichMustBeIgnoredAreNotHandledOnlyValidated() {
         setTestSubject(createTestSubject(builder -> builder.initialSegmentCount(1)));
 
         // The custom ArgumentMatcher, for some reason, first runs the assertion with null, failing the current check.
@@ -500,7 +500,7 @@ class PooledStreamingEventProcessorTest {
 
         //noinspection unchecked
         ArgumentCaptor<EventMessage<?>> handledEventsCaptor = ArgumentCaptor.forClass(EventMessage.class);
-        verify(stubEventHandler, timeout(500).times(2)).handleSync(handledEventsCaptor.capture(),any(), any());
+        verify(stubEventHandler, timeout(500).times(2)).handle(handledEventsCaptor.capture(),any(), any());
         List<EventMessage<?>> handledEvents = handledEventsCaptor.getAllValues();
         assertEquals(2, handledEvents.size());
         for (EventMessage<?> validatedEvent : handledEvents) {
@@ -590,7 +590,7 @@ class PooledStreamingEventProcessorTest {
         // Use CountDownLatch to block worker threads from actually doing work, and thus shutting down successfully.
         CountDownLatch latch = new CountDownLatch(1);
         doAnswer(i -> latch.await(10, TimeUnit.MILLISECONDS)).when(stubEventHandler)
-                                                             .handleSync(any(), any(), any());
+                                                             .handle(any(), any(), any());
 
         testSubject.start();
 
@@ -1228,9 +1228,7 @@ class PooledStreamingEventProcessorTest {
         );
         assertWithin(
                 5, TimeUnit.SECONDS,
-                () -> {
-                    assertTrue(testSubject.processingStatus().get(0).isCaughtUp());
-                }
+                () -> assertTrue(testSubject.processingStatus().get(0).isCaughtUp())
         );
         Instant now = Instant.now();
         //It should have taken 2 seconds (rounded down) or more this will fail, want changed to normal mock, then it goes faster
@@ -1242,7 +1240,6 @@ class PooledStreamingEventProcessorTest {
         setTestSubject(createTestSubject(b -> b.initialSegmentCount(1)));
 
         CountDownLatch countDownLatch = new CountDownLatch(3);
-        //noinspection resource
         testSubject.registerHandlerInterceptor(((unitOfWork, interceptorChain) -> {
             unitOfWork.onCleanup(uow -> countDownLatch.countDown());
             return interceptorChain.proceedSync();
@@ -1264,7 +1261,6 @@ class PooledStreamingEventProcessorTest {
         setTestSubject(createTestSubject(b -> b.initialSegmentCount(1)));
 
         CountDownLatch countDownLatch = new CountDownLatch(3);
-        //noinspection resource
         testSubject.registerHandlerInterceptor(((unitOfWork, interceptorChain) -> {
             unitOfWork.onCleanup(uow -> countDownLatch.countDown());
             return interceptorChain.proceedSync();
@@ -1283,15 +1279,15 @@ class PooledStreamingEventProcessorTest {
     }
 
 
-    private void mockSlowEventHandler() throws Exception {
+    private void mockSlowEventHandler() {
         doAnswer(invocation -> {
             Thread.sleep(1000);
             return null;
-        }).when(stubEventHandler).handleSync(any(), any(), any());
+        }).when(stubEventHandler).handle(any(), any(), any());
     }
 
     @Test
-    void coordinatorExtendsClaimsEarlierForBusyWorkPackages() throws Exception {
+    void coordinatorExtendsClaimsEarlierForBusyWorkPackages() {
         setTestSubject(createTestSubject(builder -> builder.initialSegmentCount(1)
                                                            .enableCoordinatorClaimExtension()));
 
@@ -1303,7 +1299,7 @@ class PooledStreamingEventProcessorTest {
             isWaiting.set(true);
             return handleLatch.await(5, TimeUnit.SECONDS);
         }).when(stubEventHandler)
-          .handleSync(any(), any(), any());
+          .handle(any(), any(), any());
 
         List<EventMessage<Integer>> events = IntStream.range(0, 42)
                                                       .mapToObj(GenericEventMessage::new)
@@ -1334,7 +1330,7 @@ class PooledStreamingEventProcessorTest {
     }
 
     @Test
-    void coordinatorExtendingClaimFailsAndAbortsWorkPackage() throws Exception {
+    void coordinatorExtendingClaimFailsAndAbortsWorkPackage() {
         setTestSubject(createTestSubject(builder -> builder.initialSegmentCount(1)
                                                            .enableCoordinatorClaimExtension()));
         String expectedExceptionMessage = "bummer";
@@ -1350,7 +1346,7 @@ class PooledStreamingEventProcessorTest {
             isWaiting.set(true);
             return handleLatch.await(5, TimeUnit.SECONDS);
         }).when(stubEventHandler)
-          .handleSync(any(), any(), any());
+          .handle(any(), any(), any());
 
         List<EventMessage<Integer>> events = IntStream.range(0, 42)
                                                       .mapToObj(GenericEventMessage::new)

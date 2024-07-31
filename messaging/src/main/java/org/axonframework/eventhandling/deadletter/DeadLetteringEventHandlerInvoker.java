@@ -126,7 +126,6 @@ public class DeadLetteringEventHandlerInvoker
 
     @Override
     public void handleSync(@Nonnull EventMessage<?> message,
-                           @Nonnull ProcessingContext processingContext,
                            @Nonnull Segment segment) throws Exception {
         if (!super.sequencingPolicyMatchesSegment(message, segment)) {
             logger.trace("Ignoring event with id [{}] as it is not assigned to segment [{}].",

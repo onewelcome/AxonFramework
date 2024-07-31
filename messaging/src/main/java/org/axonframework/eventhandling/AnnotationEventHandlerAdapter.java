@@ -19,6 +19,8 @@ package org.axonframework.eventhandling;
 import org.axonframework.eventhandling.replay.GenericResetContext;
 import org.axonframework.eventhandling.replay.ResetContext;
 import org.axonframework.messaging.HandlerAttributes;
+import org.axonframework.messaging.Message;
+import org.axonframework.messaging.MessageStream;
 import org.axonframework.messaging.annotation.AnnotatedHandlerInspector;
 import org.axonframework.messaging.annotation.ClasspathHandlerDefinition;
 import org.axonframework.messaging.annotation.ClasspathParameterResolverFactory;
@@ -105,11 +107,13 @@ public class AnnotationEventHandlerAdapter implements EventMessageHandler {
     }
 
     @Override
-    public CompletableFuture<?> handle(EventMessage<?> event, ProcessingContext processingContext) {
+    public MessageStream<Message<Void>> handle(EventMessage<?> event, ProcessingContext processingContext) {
         return inspector.getHandlers(listenerType)
-                        .filter(h -> h.canHandle(event))
+                        .filter(h -> h.canHandle(event, processingContext))
                         .findFirst()
-                        .map(handler -> handler.handle(event, annotatedEventListener))
+                        .map(handler -> (MessageStream<Message<Void>>) handler.handle(
+                                event, processingContext, annotatedEventListener
+                        ))
                         .orElseThrow(() -> new RuntimeException("what's happening"));
         // TODO implement interceptor support here as well
 //        if (handler.isPresent()) {

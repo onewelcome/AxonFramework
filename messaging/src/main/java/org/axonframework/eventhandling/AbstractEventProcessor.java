@@ -196,7 +196,7 @@ public abstract class AbstractEventProcessor implements EventProcessor {
                                               MessageMonitor.MonitorCallback monitorCallback) throws Exception {
         try {
             for (Segment processingSegment : processingSegments) {
-                eventHandlerInvoker.handleSync(message, processingContext, processingSegment);
+                eventHandlerInvoker.handle(message, processingContext, processingSegment);
             }
             monitorCallback.reportSuccess();
             return null;

@@ -77,6 +77,14 @@ class WorkPackage {
 
     static final int BUFFER_SIZE = 1024;
 
+    public static final ProcessingContext.ResourceKey<Transaction> TRANSACTION_KEY =
+            ProcessingContext.ResourceKey.create("Transaction");
+    // TODO Probably belongs in a more common StreamingEventProcessor interface
+    public static final ProcessingContext.ResourceKey<Integer> SEGMENT_ID_KEY =
+            ProcessingContext.ResourceKey.create("SegmentId");
+    public static final ProcessingContext.ResourceKey<TrackingToken> LAST_TOKEN_KEY =
+            ProcessingContext.ResourceKey.create("LastToken");
+
     private final String name;
     private final TokenStore tokenStore;
     private final TransactionManager transactionManager;
@@ -318,31 +326,33 @@ class WorkPackage {
                 AsyncUnitOfWork unitOfWork = new AsyncUnitOfWork();
                 unitOfWork.onPreInvocation(context -> {
                     Transaction transaction = transactionManager.startTransaction();
-                    context.sharedResources().put(Transaction.class, transaction);
-                    context.sharedResources().put(segmentIdResourceKey, segment.getSegmentId());
-                    context.sharedResources().put(lastTokenResourceKey, lastConsumedToken);
+                    context.putResource(TRANSACTION_KEY, transaction);
+                    context.putResource(SEGMENT_ID_KEY, segment.getSegmentId());
+                    context.putResource(LAST_TOKEN_KEY, lastConsumedToken);
                     return CompletableFuture.completedFuture(null);
                 });
                 unitOfWork.onPrepareCommit(context -> storeToken(lastConsumedToken));
                 unitOfWork.onCommit(context -> {
-                    context.sharedResources().get(Transaction.class).commit();
+                    context.getResource(TRANSACTION_KEY).commit();
                     return CompletableFuture.completedFuture(null);
                 });
                 unitOfWork.onAfterCommit(context -> {
                     segmentStatusUpdater.accept(status -> status.advancedTo(lastConsumedToken));
                     return CompletableFuture.completedFuture(null);
                 });
-                unitOfWork.onRollback(context -> {
-                    context.sharedResources().get(Transaction.class)
+                unitOfWork.onError((context, phase, error) -> {
+                    // TODO correct use of onError? Validate or check with team
+                    context.getResource(TRANSACTION_KEY)
                            .rollback();
-                    return CompletableFuture.completedFuture(null);
                 });
 
                 // TODO -> Interceptors
                 // TODO -> MessageMonitors
                 // TODO -> SpanFactory
                 unitOfWork.onInvocation(context -> eventBatch.stream()
-                                                             .map(event -> eventHandlerInvoker.handle(event, segment))
+                                                             .map(event -> eventHandlerInvoker.handle(
+                                                                     event, context, segment
+                                                             ))
                                                              .reduce(CompletableFuture::allOf)
                                                              .orElse(CompletableFuture.completedFuture(null)));
                 unitOfWork.execute()

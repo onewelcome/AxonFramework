@@ -17,6 +17,7 @@
 package org.axonframework.eventhandling;
 
 import org.axonframework.common.AxonConfigurationException;
+import org.axonframework.messaging.unitofwork.ProcessingContext;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
@@ -55,7 +56,7 @@ class SimpleEventHandlerInvokerTest {
     void singleEventPublication() throws Exception {
         EventMessage<?> event = createEvent();
 
-        testSubject.handleSync(event, null, Segment.ROOT_SEGMENT);
+        testSubject.handle(event, ProcessingContext.NONE, Segment.ROOT_SEGMENT);
 
         InOrder inOrder = inOrder(mockHandler1, mockHandler2);
         inOrder.verify(mockHandler1).handleSync(event);
@@ -68,7 +69,7 @@ class SimpleEventHandlerInvokerTest {
         List<? extends EventMessage<?>> events = createEvents(2);
 
         for (EventMessage<?> event : events) {
-            testSubject.handleSync(event, null, Segment.ROOT_SEGMENT);
+            testSubject.handle(event, ProcessingContext.NONE, Segment.ROOT_SEGMENT);
         }
 
         InOrder inOrder = inOrder(mockHandler1, mockHandler2);
