@@ -16,6 +16,13 @@
 
 package org.axonframework.eventhandling.replay;
 
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -25,12 +32,12 @@ import org.axonframework.eventhandling.Cluster;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.Duration;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -74,7 +81,7 @@ public class BackloggingIncomingMessageHandlerTest {
         testSubject.onIncomingMessages(mockCluster, messages.get(START_TIME));
         testSubject.onIncomingMessages(mockCluster, messages.get(SECOND_AFTER_START));
         testSubject.onIncomingMessages(mockCluster, messages.get(SECOND_AFTER_START));
-        verifyZeroInteractions(mockCluster);
+        verifyNoInteractions(mockCluster);
 
         testSubject.processBacklog(mockCluster);
 
@@ -92,7 +99,7 @@ public class BackloggingIncomingMessageHandlerTest {
         testSubject.releaseMessage(mockCluster, messages.get(SECOND_BEFORE_START));
         testSubject.releaseMessage(mockCluster, messages.get(START_TIME));
         testSubject.releaseMessage(mockCluster, messages.get(SECOND_AFTER_START));
-        verifyZeroInteractions(mockCluster);
+        verifyNoInteractions(mockCluster);
 
         testSubject.processBacklog(mockCluster);
 
@@ -110,7 +117,7 @@ public class BackloggingIncomingMessageHandlerTest {
         testSubject.onIncomingMessages(mockCluster, messages.get(START_TIME));
         testSubject.onIncomingMessages(mockCluster, messages.get(SECOND_AFTER_START));
         testSubject.onIncomingMessages(mockCluster, messages.get(MINUTE_AFTER_START));
-        verifyZeroInteractions(mockCluster);
+        verifyNoInteractions(mockCluster);
 
         testSubject.processBacklog(mockCluster);
 
@@ -129,7 +136,7 @@ public class BackloggingIncomingMessageHandlerTest {
         testSubject.onIncomingMessages(mockCluster, messages.get(START_TIME));
         testSubject.onIncomingMessages(mockCluster, messages.get(SECOND_AFTER_START));
         testSubject.processBacklog(mockCluster);
-        verifyZeroInteractions(mockCluster);
+        verifyNoInteractions(mockCluster);
         testSubject.onIncomingMessages(mockCluster, messages.get(MINUTE_AFTER_START));
 
 
@@ -147,7 +154,7 @@ public class BackloggingIncomingMessageHandlerTest {
         testSubject.onIncomingMessages(mockCluster, messages.get(START_TIME));
         testSubject.releaseMessage(mockCluster, messages.get(MINUTE_BEFORE_START));
         testSubject.releaseMessage(mockCluster, messages.get(SECOND_BEFORE_START));
-        verifyZeroInteractions(mockCluster);
+        verifyNoInteractions(mockCluster);
 
         testSubject.releaseMessage(mockCluster, messages.get(START_TIME));
         verify(mockCluster).publish(intermediateEventMessage);

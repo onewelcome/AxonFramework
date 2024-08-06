@@ -16,8 +16,10 @@
 
 package org.axonframework.commandhandling.disruptor;
 
-import com.eaio.uuid.UUID;
+
 import org.axonframework.domain.IdentifierFactory;
+
+import java.util.UUID;
 
 /**
  * @author Allard Buijze
@@ -25,6 +27,6 @@ import org.axonframework.domain.IdentifierFactory;
 public class FastUUIDIdentifierFactory extends IdentifierFactory {
     @Override
     public String generateIdentifier() {
-        return new UUID().toString();
+        return UUID.randomUUID().toString();
     }
 }

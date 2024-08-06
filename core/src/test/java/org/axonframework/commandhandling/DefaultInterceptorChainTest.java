@@ -16,17 +16,18 @@
 
 package org.axonframework.commandhandling;
 
-import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.*;
-
 import static java.util.Arrays.asList;
 import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.isA;
+import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.axonframework.unitofwork.UnitOfWork;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Allard Buijze
@@ -70,16 +71,8 @@ public class DefaultInterceptorChainTest {
         String actual = (String) testSubject.proceed();
 
         assertSame("Result", actual);
-        verify(mockCommandHandler).handle(argThat(new BaseMatcher<CommandMessage>() {
-            @Override
-            public boolean matches(Object o) {
-                return (o instanceof CommandMessage) && ((CommandMessage) o).getPayload().equals("testing");
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("Command with 'testing' payload");
-            }
-        }), isA(UnitOfWork.class));
+        verify(mockCommandHandler).handle(argThat(commandMessage ->
+            commandMessage instanceof CommandMessage && ((CommandMessage) commandMessage).getPayload().equals("testing")
+        ), isA(UnitOfWork.class));
     }
 }

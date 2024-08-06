@@ -16,6 +16,25 @@
 
 package org.axonframework.commandhandling.disruptor;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.axonframework.commandhandling.CommandCallback;
@@ -55,13 +74,14 @@ import org.axonframework.unitofwork.UnitOfWork;
 import org.axonframework.unitofwork.UnitOfWorkListener;
 import org.axonframework.unitofwork.UnitOfWorkListenerAdapter;
 import org.dom4j.Document;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.junit.internal.matchers.*;
-import org.mockito.*;
-import org.mockito.internal.stubbing.answers.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
+import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,10 +96,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static junit.framework.Assert.*;
-import static org.hamcrest.core.IsNot.not;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -200,14 +216,14 @@ public class DisruptorCommandBusTest {
 
         callback.awaitCompletion(5, TimeUnit.SECONDS);
 
-        verify(eventBus).publish(argThat(new org.hamcrest.TypeSafeMatcher<EventMessage>() {
+        verify(eventBus).publish(argThat(new ArgumentMatcher<EventMessage>() {
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event with meta data");
+            public String toString() {
+                return "an event with meta data";
             }
 
             @Override
-            protected boolean matchesSafely(EventMessage item) {
+            public boolean matches(EventMessage item) {
                 return "value".equals(item.getMetaData().get("meta-key"));
             }
         }));
@@ -381,9 +397,11 @@ public class DisruptorCommandBusTest {
             testSubject.dispatch(new GenericCommandMessage<StubCommand>(new StubCommand(aggregateIdentifier)));
         }
         testSubject.stop();
-        verify(mockEventBus, times(1)).publish(argThat(not(new IsSerializationAware())),
-                                               argThat(not(new IsSerializationAware())));
-        verify(mockEventBus, times(10)).publish(argThat(not(new IsSerializationAware())));
+        verify(mockEventBus, times(1)).publish(
+            not(argThat(new IsSerializationAware())),
+            not(argThat(new IsSerializationAware()))
+        );
+        verify(mockEventBus, times(10)).publish(not(argThat(new IsSerializationAware())));
     }
 
     @Test
@@ -407,9 +425,11 @@ public class DisruptorCommandBusTest {
         testSubject.stop();
         verify(serializer, never()).serialize(isA(SomethingDoneEvent.class), eq(byte[].class));
         verify(serializer, never()).serialize(isA(MetaData.class), eq(byte[].class));
-        verify(mockEventBus, times(1)).publish(argThat(not(new IsSerializationAware())),
-                                               argThat(not(new IsSerializationAware())));
-        verify(mockEventBus, times(10)).publish(argThat(not(new IsSerializationAware())));
+        verify(mockEventBus, times(1)).publish(
+            not(argThat(new IsSerializationAware())),
+            not(argThat(new IsSerializationAware()))
+        );
+        verify(mockEventBus, times(10)).publish(not(argThat(new IsSerializationAware())));
     }
 
     private CommandCallback dispatchCommands(CommandHandlerInterceptor mockInterceptor, ExecutorService customExecutor,
@@ -735,23 +755,23 @@ public class DisruptorCommandBusTest {
         }
     }
 
-    private static class IsSerializationAware extends TypeSafeMatcher<EventMessage> {
+    private static class IsSerializationAware implements ArgumentMatcher<EventMessage> {
 
         @Override
-        public boolean matchesSafely(EventMessage item) {
+        public boolean matches(EventMessage item) {
             return item instanceof SerializationAware;
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("Serialization aware messages");
+        public String toString() {
+            return "Serialization aware messages";
         }
     }
 
-    private static class StreamWithSerializationAwareEvents extends TypeSafeMatcher<DomainEventStream> {
+    private static class StreamWithSerializationAwareEvents implements ArgumentMatcher<DomainEventStream> {
 
         @Override
-        public boolean matchesSafely(DomainEventStream item) {
+        public boolean matches(DomainEventStream item) {
             while (item.hasNext()) {
                 if (!(item.next() instanceof SerializationAware)) {
                     return false;
@@ -761,8 +781,8 @@ public class DisruptorCommandBusTest {
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("Stream with Serialization Aware events");
+        public String toString() {
+            return "Stream with Serialization Aware events";
         }
     }
 }

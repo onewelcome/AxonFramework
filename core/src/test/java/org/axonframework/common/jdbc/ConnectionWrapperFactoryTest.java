@@ -1,14 +1,18 @@
 package org.axonframework.common.jdbc;
 
-import org.junit.*;
-
-import java.sql.Connection;
-
 import static org.axonframework.common.jdbc.ConnectionWrapperFactory.wrap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import java.sql.Connection;
 
 /**
  * @author Allard Buijze
@@ -33,7 +37,7 @@ public class ConnectionWrapperFactoryTest {
         wrapped.getAutoCommit();
         verify(connection).getAutoCommit();
 
-        verifyZeroInteractions(closeHandler);
+        verifyNoInteractions(closeHandler);
 
         wrapped.close();
         verify(connection, never()).close();

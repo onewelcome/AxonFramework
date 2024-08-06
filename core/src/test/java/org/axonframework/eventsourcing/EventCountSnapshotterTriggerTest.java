@@ -16,6 +16,12 @@
 
 package org.axonframework.eventsourcing;
 
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.cache.Cache;
 import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -25,12 +31,12 @@ import org.axonframework.domain.StubAggregate;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.junit.*;
-import org.mockito.internal.matchers.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.internal.matchers.CapturingMatcher;
 
 import java.util.Arrays;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -59,7 +65,7 @@ public class EventCountSnapshotterTriggerTest {
         aggregate = new StubAggregate(aggregateIdentifier);
         //noinspection unchecked
         mockCache = mock(Cache.class);
-        listenerConfiguration = new CapturingMatcher<Cache.EntryListener>();
+        listenerConfiguration = new CapturingMatcher<>(Cache.EntryListener.class);
         doNothing().when(mockCache).registerCacheEntryListener(argThat(listenerConfiguration));
 
         unitOfWork = DefaultUnitOfWork.startAndGet();

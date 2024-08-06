@@ -16,6 +16,16 @@
 
 package org.axonframework.upcasting;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.serializer.CannotConvertBetweenTypesException;
 import org.axonframework.serializer.ContentTypeConverter;
 import org.axonframework.serializer.ConverterFactory;
@@ -23,15 +33,13 @@ import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.SerializedType;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.dom4j.Document;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -74,7 +82,7 @@ public abstract class UpcasterChainTest {
         List<SerializedObject> actual2 = chain.upcast(object2, upcastingContext);
         assertEquals(object3.getType(), actual2.get(0).getType());
 
-        verifyZeroInteractions(converterFactory);
+        verifyNoInteractions(converterFactory);
     }
 
     @Test
@@ -146,7 +154,7 @@ public abstract class UpcasterChainTest {
         assertEquals(intermediate2.getType(), upcastedObjects.get(0).getType());
         assertEquals(intermediate3.getData(), upcastedObjects.get(1).getData());
         assertEquals(intermediate3.getType(), upcastedObjects.get(1).getType());
-        verifyZeroInteractions(converterFactory);
+        verifyNoInteractions(converterFactory);
     }
 
     protected abstract UpcasterChain createUpcasterChain(ConverterFactory converterFactory, Upcaster... upcasters);

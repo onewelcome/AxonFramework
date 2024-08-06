@@ -16,6 +16,24 @@
 
 package org.axonframework.eventsourcing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import net.sf.ehcache.CacheManager;
 import org.axonframework.cache.Cache;
 import org.axonframework.cache.EhCacheAdapter;
@@ -30,17 +48,15 @@ import org.axonframework.eventstore.PartialStreamSupport;
 import org.axonframework.repository.AggregateNotFoundException;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -82,15 +98,15 @@ public class CachingEventSourcingRepositoryTest {
 
         // ensure the cached aggregate has been committed before being cached.
         doThrow(new AssertionError("Aggregate should not have a null version when cached"))
-                .when(cache).put(eq(aggregate1.getIdentifier()), argThat(new TypeSafeMatcher<StubAggregate>() {
+                .when(cache).put(eq(aggregate1.getIdentifier()), argThat(new ArgumentMatcher<StubAggregate>() {
             @Override
-            public boolean matchesSafely(StubAggregate item) {
+            public boolean matches(StubAggregate item) {
                 return item.getVersion() == null;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("An aggregate with a non-null version");
+            public String toString() {
+                return "An aggregate with a non-null version";
             }
         }));
 
@@ -144,25 +160,25 @@ public class CachingEventSourcingRepositoryTest {
 
         assertEquals(3, mockEventStore.readEventsAsList(aggregate1.getIdentifier()).size());
 
-        verify(conflictResolver).resolveConflicts(argThat(new TypeSafeMatcher<List<DomainEventMessage>>() {
+        verify(conflictResolver).resolveConflicts(argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matchesSafely(List<DomainEventMessage> item) {
+            public boolean matches(List<DomainEventMessage> item) {
                 return item.size() == 1 && item.get(0).getSequenceNumber() == 2;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("a list with 1 event, having sequence number 2");
+            public String toString() {
+                return "a list with 1 event, having sequence number 2";
             }
-        }), argThat(new TypeSafeMatcher<List<DomainEventMessage>>() {
+        }), argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matchesSafely(List<DomainEventMessage> item) {
+            public boolean matches(List<DomainEventMessage> item) {
                 return item.size() == 1 && item.get(0).getSequenceNumber() == 1;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("a list with 1 event, having sequence number 1");
+            public String toString() {
+                return "a list with 1 event, having sequence number 1";
             }
         }));
     }
@@ -195,27 +211,27 @@ public class CachingEventSourcingRepositoryTest {
 
         assertEquals(3, mockEventStore.readEventsAsList(aggregate1.getIdentifier()).size());
 
-        verify(mockEventStore, never()).readEvents(anyString(), anyObject());
+        verify(mockEventStore, never()).readEvents(anyString(), any());
 
-        verify(conflictResolver).resolveConflicts(argThat(new TypeSafeMatcher<List<DomainEventMessage>>() {
+        verify(conflictResolver).resolveConflicts(argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matchesSafely(List<DomainEventMessage> item) {
+            public boolean matches(List<DomainEventMessage> item) {
                 return item.size() == 1 && item.get(0).getSequenceNumber() == 2;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("a list with 1 event, having sequence number 2");
+            public String toString() {
+                return "a list with 1 event, having sequence number 2";
             }
-        }), argThat(new TypeSafeMatcher<List<DomainEventMessage>>() {
+        }), argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matchesSafely(List<DomainEventMessage> item) {
+            public boolean matches(List<DomainEventMessage> item) {
                 return item.size() == 1 && item.get(0).getSequenceNumber() == 1;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("a list with 1 event, having sequence number 1");
+            public String toString() {
+                return "a list with 1 event, having sequence number 1";
             }
         }));
     }

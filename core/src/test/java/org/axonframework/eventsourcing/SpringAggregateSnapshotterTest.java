@@ -16,15 +16,24 @@
 
 package org.axonframework.eventsourcing;
 
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.GenericDomainEventMessage;
 import org.axonframework.domain.MetaData;
 import org.axonframework.domain.SimpleDomainEventStream;
 import org.axonframework.domain.StubAggregate;
 import org.axonframework.eventstore.SnapshotEventStore;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -32,8 +41,6 @@ import org.springframework.transaction.support.SimpleTransactionStatus;
 
 import java.util.Collections;
 import java.util.UUID;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -156,17 +163,16 @@ public class SpringAggregateSnapshotterTest {
     }
 
     private DomainEventMessage eventSequence(final long sequenceNumber) {
-        return argThat(new BaseMatcher<DomainEventMessage>() {
+        return argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matches(Object o) {
-                return o instanceof DomainEventMessage
-                        && ((DomainEventMessage) o).getSequenceNumber() == sequenceNumber;
+            public boolean matches(DomainEventMessage domainEventMessage) {
+                return domainEventMessage != null
+                        && domainEventMessage.getSequenceNumber() == sequenceNumber;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("expected event with sequence number: ");
-                description.appendValue(sequenceNumber);
+            public String toString() {
+                return String.format("expected event with sequence number: %d", sequenceNumber);
             }
         });
     }

@@ -16,20 +16,27 @@
 
 package org.axonframework.common.annotation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.common.Priority;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.domain.Message;
-import org.junit.*;
-import org.mockito.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -52,12 +59,12 @@ public class MultiParameterResolverFactoryTest {
         mockResolver1 = mock(ParameterResolver.class);
         mockResolver2 = mock(ParameterResolver.class);
 
-        when(mockFactory1.createInstance(Matchers.<Annotation[]>anyObject(),
+        when(mockFactory1.createInstance(any(Annotation[].class),
                                          any(Class.class),
-                                         Matchers.<Annotation[]>any())).thenReturn(mockResolver1);
-        when(mockFactory2.createInstance(Matchers.<Annotation[]>anyObject(),
+                                         any(Annotation[].class))).thenReturn(mockResolver1);
+        when(mockFactory2.createInstance(any(Annotation[].class),
                                          any(Class.class),
-                                         Matchers.<Annotation[]>any())).thenReturn(mockResolver2);
+                                         any(Annotation[].class))).thenReturn(mockResolver2);
 
         testSubject = new MultiParameterResolverFactory(mockFactory1, mockFactory2);
     }
@@ -68,14 +75,12 @@ public class MultiParameterResolverFactoryTest {
         assertFalse(factory.matches(null));
 
         InOrder inOrder = inOrder(mockFactory1, mockFactory2, mockResolver1, mockResolver2);
-        inOrder.verify(mockFactory1).createInstance(Matchers.<Annotation[]>anyObject(),
+        inOrder.verify(mockFactory1).createInstance(any(Annotation[].class),
                                                     eq(String.class),
-                                                    Matchers.<Annotation[]>any());
+                                                    any(Annotation[].class));
         inOrder.verify(mockResolver1).matches(any(Message.class));
 
-        verify(mockFactory2, never()).createInstance(Matchers.<Annotation[]>anyObject(),
-                                                     eq(String.class),
-                                                     Matchers.<Annotation[]>any());
+        verify(mockFactory2, never()).createInstance(any(Annotation[].class), eq(String.class), any(Annotation[].class));
 
         verify(mockResolver2, never()).matches(any(Message.class));
     }
@@ -83,7 +88,7 @@ public class MultiParameterResolverFactoryTest {
     @Test
     public void testFirstMatchingResolverMayReturnValue() throws Exception {
         final EventMessage<Object> message = GenericEventMessage.asEventMessage("test");
-        when(mockFactory1.createInstance(Matchers.<Annotation[]>any(), any(Class.class), Matchers.<Annotation[]>any()))
+        when(mockFactory1.createInstance(any(Annotation[].class), any(Class.class), any(Annotation[].class)))
                 .thenReturn(null);
         when(mockResolver2.matches(message)).thenReturn(true);
         when(mockResolver2.resolveParameterValue(message)).thenReturn("Resolved");

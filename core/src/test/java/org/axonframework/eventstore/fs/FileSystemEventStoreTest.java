@@ -16,6 +16,20 @@
 
 package org.axonframework.eventstore.fs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -25,9 +39,10 @@ import org.axonframework.eventstore.EventStoreException;
 import org.axonframework.repository.ConflictingModificationException;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
-import org.junit.*;
-import org.junit.rules.*;
-import org.mockito.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -127,7 +139,7 @@ public class FileSystemEventStoreTest {
         eventStore.appendEvents("test", stream);
 
         doReturn(new SimpleSerializedObject<byte[]>("error".getBytes(), byte[].class, String.class.getName(), "old"))
-                .when(serializer).serialize(anyObject(), eq(byte[].class));
+                .when(serializer).serialize(any(), eq(byte[].class));
         eventStore.appendSnapshotEvent("test", event2);
 
         DomainEventStream actual = eventStore.readEvents("test", aggregateIdentifier);
@@ -181,8 +193,8 @@ public class FileSystemEventStoreTest {
                 .thenReturn(mockInputStream);
         IOException exception = new IOException("Mock Exception");
         when(mockInputStream.read()).thenThrow(exception);
-        when(mockInputStream.read(Matchers.<byte[]>any())).thenThrow(exception);
-        when(mockInputStream.read(Matchers.<byte[]>any(), anyInt(), anyInt())).thenThrow(exception);
+        when(mockInputStream.read(any())).thenThrow(exception);
+        when(mockInputStream.read(any(), anyInt(), anyInt())).thenThrow(exception);
         FileSystemEventStore eventStore = new FileSystemEventStore(mockEventFileResolver);
 
         try {
