@@ -16,6 +16,7 @@
 
 package org.axonframework.integrationtests.cache;
 
+import org.axonframework.common.FutureUtils;
 import org.axonframework.common.caching.Cache;
 import org.axonframework.config.Configuration;
 import org.axonframework.config.DefaultConfigurer;
@@ -42,12 +43,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -88,12 +89,10 @@ public abstract class CachingIntegrationTestSuite {
     void setUp() {
         Cache sagaCache = buildCache("saga");
         sagaCacheListener = new EntryListenerValidator<>(ListenerType.SAGA);
-        //noinspection resource
         sagaCache.registerCacheEntryListener(sagaCacheListener);
 
         Cache associationsCache = buildCache("associations");
         associationsCacheListener = new EntryListenerValidator<>(ListenerType.ASSOCIATIONS);
-        //noinspection resource
         associationsCache.registerCacheEntryListener(associationsCacheListener);
 
         Consumer<SagaConfigurer<CachedSaga>> sagaConfigurer =
@@ -184,12 +183,19 @@ public abstract class CachingIntegrationTestSuite {
     @Test
     void publishingBigEventTransactionsConcurrentlyTowardsCachedSagaWorksWithoutException()
             throws ExecutionException, InterruptedException, TimeoutException {
+        try (ExecutorService executor = newFixedThreadPool(NUMBER_OF_CONCURRENT_PUBLISHERS)) {
+            publishingBigEventTransactionsConcurrentlyTowardsCachedSagaWorksWithoutException(executor);
+        }
+    }
+
+    private void publishingBigEventTransactionsConcurrentlyTowardsCachedSagaWorksWithoutException(
+            ExecutorService executor
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         int createEvents = 1;
         int deleteEvents = 1;
         String sagaName = SAGA_NAMES[0];
         String associationValue = "some-id";
         String associationCacheKey = sagaAssociationCacheKey(associationValue);
-        ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_CONCURRENT_PUBLISHERS);
 
         // Construct the saga...
         publish(new CachedSaga.SagaCreatedEvent(associationValue, sagaName, NUMBER_OF_ASSOCIATIONS));
@@ -216,7 +222,7 @@ public abstract class CachingIntegrationTestSuite {
                          () -> publishBulkUpdatesTo(associationValue, NUMBER_OF_UPDATES), executor
                  ))
                  .reduce(CompletableFuture::allOf)
-                 .orElse(CompletableFuture.completedFuture(null))
+                 .orElse(FutureUtils.emptyCompletedFuture())
                  .get(15, TimeUnit.SECONDS);
         await().pollDelay(DEFAULT_DELAY)
                .atMost(SIXTEEN_SECONDS)
@@ -245,9 +251,16 @@ public abstract class CachingIntegrationTestSuite {
     @Test
     void publishingBigEventTransactionTowardsSeveralCachedSagasWorksWithoutException()
             throws ExecutionException, InterruptedException, TimeoutException {
+        try (ExecutorService executor = newFixedThreadPool(SAGA_NAMES.length)) {
+            publishingBigEventTransactionTowardsSeveralCachedSagasWorksWithoutException(executor);
+        }
+    }
+
+    private void publishingBigEventTransactionTowardsSeveralCachedSagasWorksWithoutException(
+            ExecutorService executor
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         int createEvents = SAGA_NAMES.length;
         int deleteEvents = SAGA_NAMES.length;
-        ExecutorService executor = Executors.newFixedThreadPool(SAGA_NAMES.length);
 
         // Construct the sagas...
         for (String sagaName : SAGA_NAMES) {
@@ -281,7 +294,7 @@ public abstract class CachingIntegrationTestSuite {
                       () -> publishBulkUpdatesTo(name + "-id", NUMBER_OF_UPDATES), executor
               ))
               .reduce(CompletableFuture::allOf)
-              .orElse(CompletableFuture.completedFuture(null))
+              .orElse(FutureUtils.emptyCompletedFuture())
               .get(15, TimeUnit.SECONDS);
         await().pollDelay(DEFAULT_DELAY)
                .atMost(EIGHT_SECONDS)
@@ -324,10 +337,16 @@ public abstract class CachingIntegrationTestSuite {
     @Test
     void publishingBigEventTransactionsConcurrentlyTowardsSeveralCachedSagasWorksWithoutException()
             throws ExecutionException, InterruptedException, TimeoutException {
+        try (ExecutorService executor = newFixedThreadPool(SAGA_NAMES.length * NUMBER_OF_CONCURRENT_PUBLISHERS)) {
+            publishingBigEventTransactionsConcurrentlyTowardsSeveralCachedSagasWorksWithoutException(executor);
+        }
+    }
+
+    private void publishingBigEventTransactionsConcurrentlyTowardsSeveralCachedSagasWorksWithoutException(
+            ExecutorService executor
+    ) throws InterruptedException, ExecutionException, TimeoutException {
         int createEvents = SAGA_NAMES.length;
         int deleteEvents = SAGA_NAMES.length;
-        ExecutorService executor = Executors.newFixedThreadPool(SAGA_NAMES.length * NUMBER_OF_CONCURRENT_PUBLISHERS);
-
         // Construct the sagas...
         for (String sagaName : SAGA_NAMES) {
             publish(new CachedSaga.SagaCreatedEvent(sagaName + "-id", sagaName, NUMBER_OF_ASSOCIATIONS));
@@ -362,7 +381,7 @@ public abstract class CachingIntegrationTestSuite {
                          executor
                  ))
                  .reduce(CompletableFuture::allOf)
-                 .orElse(CompletableFuture.completedFuture(null))
+                 .orElse(FutureUtils.emptyCompletedFuture())
                  .get(15, TimeUnit.SECONDS);
         await().pollDelay(DEFAULT_DELAY)
                .atMost(THIRTY_TWO_SECONDS)
