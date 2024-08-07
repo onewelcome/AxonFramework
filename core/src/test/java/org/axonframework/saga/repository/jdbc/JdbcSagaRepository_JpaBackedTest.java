@@ -16,6 +16,13 @@
 
 package org.axonframework.saga.repository.jdbc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.axonframework.domain.EventMessage;
 import org.axonframework.saga.AssociationValue;
 import org.axonframework.saga.AssociationValues;
@@ -25,22 +32,22 @@ import org.axonframework.saga.repository.StubSaga;
 import org.axonframework.saga.repository.jpa.AssociationValueEntry;
 import org.axonframework.saga.repository.jpa.SagaEntry;
 import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import static org.junit.Assert.*;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Allard Buijze
@@ -67,7 +74,7 @@ public class JdbcSagaRepository_JpaBackedTest {
         // So we must alter the table to prevent data truncation
         entityManager.createNativeQuery("ALTER TABLE SagaEntry ALTER COLUMN serializedSaga VARBINARY(1024)")
                      .executeUpdate();
-        serializer = new XStreamSerializer();
+        serializer = newSerializer();
     }
 
     @DirtiesContext
@@ -178,10 +185,10 @@ public class JdbcSagaRepository_JpaBackedTest {
     @DirtiesContext
     @Test
     public void testLoadUncachedSaga_ByIdentifier() {
-        repository.setSerializer(new XStreamSerializer());
+        repository.setSerializer(newSerializer());
         String identifier = UUID.randomUUID().toString();
         StubSaga saga = new StubSaga(identifier);
-        entityManager.persist(new SagaEntry(saga, new XStreamSerializer()));
+        entityManager.persist(new SagaEntry(saga, newSerializer()));
         entityManager.flush();
         entityManager.clear();
         Saga loaded = repository.load(identifier);
@@ -234,7 +241,7 @@ public class JdbcSagaRepository_JpaBackedTest {
     public void testSaveSaga() {
         String identifier = UUID.randomUUID().toString();
         StubSaga saga = new StubSaga(identifier);
-        entityManager.persist(new SagaEntry(saga, new XStreamSerializer()));
+        entityManager.persist(new SagaEntry(saga, newSerializer()));
         entityManager.flush();
         StubSaga loaded = (StubSaga) repository.load(identifier);
         repository.commit(loaded);
@@ -242,7 +249,7 @@ public class JdbcSagaRepository_JpaBackedTest {
         entityManager.clear();
 
         SagaEntry entry = entityManager.find(SagaEntry.class, identifier);
-        StubSaga actualSaga = (StubSaga) entry.getSaga(new XStreamSerializer());
+        StubSaga actualSaga = (StubSaga) entry.getSaga(newSerializer());
         assertNotSame(loaded, actualSaga);
     }
 
@@ -272,7 +279,12 @@ public class JdbcSagaRepository_JpaBackedTest {
         uow.commit();
     }
 
+    private static XStreamSerializer newSerializer() {
+        return XStreamSerializerFactory.create(StubSaga.class, AssociationValue.class);
+    }
+
     public static class MyOtherTestSaga extends AbstractAnnotatedSaga {
+
 
         private static final long serialVersionUID = -1562911263884220240L;
 
