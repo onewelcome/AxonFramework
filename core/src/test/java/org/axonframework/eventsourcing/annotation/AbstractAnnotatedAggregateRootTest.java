@@ -16,6 +16,15 @@
 
 package org.axonframework.eventsourcing.annotation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.WildcardTypePermission;
 import org.axonframework.common.ReflectionUtils;
 import org.axonframework.common.annotation.ClasspathParameterResolverFactory;
 import org.axonframework.common.annotation.FixedValueParameterResolver;
@@ -33,8 +42,10 @@ import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.joda.time.DateTime;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Test;
 
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -42,9 +53,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.Id;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -127,7 +135,11 @@ public class AbstractAnnotatedAggregateRootTest {
     public void testSerializationSetsLiveStateToTrue() throws Exception {
         LateIdentifiedAggregate aggregate = new LateIdentifiedAggregate(new StubDomainEvent(false));
         aggregate.commitEvents();
-        final XStreamSerializer serializer = new XStreamSerializer();
+        XStream xStream = new XStream();
+        xStream.addPermission(new WildcardTypePermission(new String[] {
+            LateIdentifiedAggregate.class.getName()
+        }));
+        final XStreamSerializer serializer = new XStreamSerializer(xStream);
         SerializedObject<String> serialized = serializer.serialize(aggregate, String.class);
 
         LateIdentifiedAggregate deserializedAggregate = serializer.deserialize(serialized);

@@ -61,7 +61,7 @@ public class AutowiredDependencyFactoryBeanTest {
         when(mockApplicationContext.getAutowireCapableBeanFactory()).thenReturn(mockBeanFactory);
         when(mockApplicationContext.getBean(anyString())).thenReturn("mockBean");
         when(mockBeanFactory.containsBeanDefinition(anyString())).thenReturn(true);
-        when(mockApplicationContext.getBeanNamesForType(any())).thenAnswer(new Answer<Object>() {
+        when(mockApplicationContext.getBeanNamesForType(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 List<String> beanNames = beansOfType.get(invocation.getArguments()[0]);

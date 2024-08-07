@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
@@ -33,6 +34,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.WildcardTypePermission;
 import org.axonframework.common.jpa.EntityManagerProvider;
 import org.axonframework.common.jpa.SimpleEntityManagerProvider;
 import org.axonframework.domain.DomainEventMessage;
@@ -54,6 +57,7 @@ import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.SimpleSerializedType;
 import org.axonframework.serializer.UnknownSerializedTypeException;
+import org.axonframework.serializer.xml.XStreamSerializer;
 import org.axonframework.upcasting.LazyUpcasterChain;
 import org.axonframework.upcasting.Upcaster;
 import org.axonframework.upcasting.UpcasterChain;
@@ -65,8 +69,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -109,6 +114,8 @@ public class JpaEventStoreTest {
     @Autowired
     private PlatformTransactionManager txManager;
     private TransactionTemplate template;
+    @Autowired
+    private Serializer serializer;
 
     @Before
     public void setUp() {
@@ -731,20 +738,20 @@ public class JpaEventStoreTest {
     public void testCustomEventEntryStore() {
         EventEntryStore eventEntryStore = mock(EventEntryStore.class);
         when(eventEntryStore.getDataType()).thenReturn(byte[].class);
-        testSubject = new JpaEventStore(new SimpleEntityManagerProvider(entityManager), eventEntryStore);
+        testSubject = new JpaEventStore(new SimpleEntityManagerProvider(entityManager), serializer, eventEntryStore);
         testSubject.appendEvents("test", new SimpleDomainEventStream(
                 new GenericDomainEventMessage<>(UUID.randomUUID(), 0L,
                                                       "Mock contents", MetaData.emptyInstance()),
                 new GenericDomainEventMessage<>(UUID.randomUUID(), 0L,
                                                       "Mock contents", MetaData.emptyInstance())));
         verify(eventEntryStore, times(2)).persistEvent(eq("test"), isA(DomainEventMessage.class),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any(), same(entityManager));
+            any(),
+            any(), same(entityManager));
 
         reset(eventEntryStore);
         GenericDomainEventMessage<String> eventMessage = new GenericDomainEventMessage<>(
             UUID.randomUUID(), 0L, "Mock contents", MetaData.emptyInstance());
-        when(eventEntryStore.fetchAggregateStream(anyString(), any(), anyInt(), anyInt(),
+        when(eventEntryStore.fetchAggregateStream(anyString(), any(), anyLong(), anyInt(),
                                                   any(EntityManager.class)))
                 .thenReturn(new ArrayList(Arrays.asList(new DomainEventEntry(
                         "Mock", eventMessage,
@@ -831,7 +838,7 @@ public class JpaEventStoreTest {
     @Transactional
     @Test
     public void testStoreEventsWithCustomEntity() throws Exception {
-        testSubject = new JpaEventStore(entityManagerProvider,
+        testSubject = new JpaEventStore(entityManagerProvider, serializer,
                                         new DefaultEventEntryStore<>(new EventEntryFactory<String>() {
                                             @Override
                                             public Class<String> getDataType() {
@@ -948,7 +955,7 @@ public class JpaEventStoreTest {
         }
     }
 
-    private static class StubStateChangedEvent {
+    private static class StubStateChangedEvent  {
 
         private StubStateChangedEvent() {
         }
@@ -983,6 +990,18 @@ public class JpaEventStoreTest {
         public List<SerializedType> upcast(SerializedType serializedType) {
             return Arrays.asList(new SimpleSerializedType("unknownType1", "2"),
                                                  new SimpleSerializedType(StubStateChangedEvent.class.getName(), "2"));
+        }
+    }
+
+    @Configuration
+    public static class ContextConfiguration {
+        @Bean
+        public Serializer serializer() {
+            XStream xStream = new XStream();
+            xStream.addPermission(new WildcardTypePermission(new String[] {
+                StubStateChangedEvent.class.getName()
+            }));
+            return new XStreamSerializer(xStream);
         }
     }
 }

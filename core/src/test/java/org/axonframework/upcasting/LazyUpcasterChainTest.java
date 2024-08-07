@@ -16,19 +16,24 @@
 
 package org.axonframework.upcasting;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.serializer.ConverterFactory;
 import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.SerializedType;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.SimpleSerializedType;
-import org.junit.*;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -52,24 +57,24 @@ public class LazyUpcasterChainTest extends UpcasterChainTest {
 
         List<SerializedObject> actualResult = testSubject.upcast(
                 new SimpleSerializedObject<String>("object", String.class, "type", "1"), null);
-        verify(firstUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
+        verify(firstUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
         assertEquals(4, actualResult.size());
         assertEquals("3", actualResult.get(0).getType().getRevision());
         assertEquals("3", actualResult.get(1).getType().getRevision());
         assertEquals("3", actualResult.get(2).getType().getRevision());
         assertEquals("3", actualResult.get(3).getType().getRevision());
-        verify(firstUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
+        verify(firstUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
         assertEquals("upcast upcast object", actualResult.get(0).getData().toString());
         assertEquals("upcast upcast object", actualResult.get(1).getData().toString());
         assertEquals("upcast upcast object", actualResult.get(2).getData().toString());
         assertEquals("upcast upcast object", actualResult.get(3).getData().toString());
-        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(secondUpcaster, times(2)).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
+        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(secondUpcaster, times(2)).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
     }
 
     @SuppressWarnings("unchecked")
@@ -93,24 +98,24 @@ public class LazyUpcasterChainTest extends UpcasterChainTest {
         List<SerializedObject> actualResult = testSubject.upcast(
                 new SimpleSerializedObject<String>("object", String.class, "type", "1"), null);
         // the second upcaster accessed the serialized object, so we expect a call here
-        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
+        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
         assertEquals(4, actualResult.size());
         assertEquals("3", actualResult.get(0).getType().getRevision());
         assertEquals("3", actualResult.get(1).getType().getRevision());
         assertEquals("3", actualResult.get(2).getType().getRevision());
         assertEquals("3", actualResult.get(3).getType().getRevision());
-        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
+        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(secondUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
         assertEquals("upcast upcast object", actualResult.get(0).getData().toString());
         assertEquals("upcast upcast object", actualResult.get(1).getData().toString());
         assertEquals("upcast upcast object", actualResult.get(2).getData().toString());
         assertEquals("upcast upcast object", actualResult.get(3).getData().toString());
-        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(secondUpcaster, times(2)).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
-        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), any(UpcastingContext.class));
+        verify(firstUpcaster).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(secondUpcaster, times(2)).upcast(isA(SerializedObject.class), isA(List.class), isNull());
+        verify(thirdUpcaster, never()).upcast(isA(SerializedObject.class), isA(List.class), isNull());
     }
 
     private class StubUpcaster implements Upcaster<String> {
