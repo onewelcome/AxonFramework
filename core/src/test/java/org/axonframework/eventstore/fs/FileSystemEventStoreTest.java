@@ -37,8 +37,9 @@ import org.axonframework.domain.SimpleDomainEventStream;
 import org.axonframework.domain.StubDomainEvent;
 import org.axonframework.eventstore.EventStoreException;
 import org.axonframework.repository.ConflictingModificationException;
+import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.SimpleSerializedObject;
-import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class FileSystemEventStoreTest {
 
     @Test
     public void testSaveStreamAndReadBackIn() {
-        FileSystemEventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(eventFileBaseDir));
+        FileSystemEventStore eventStore = new FileSystemEventStore(serializer(), new SimpleEventFileResolver(eventFileBaseDir));
 
         GenericDomainEventMessage<StubDomainEvent> event1 = new GenericDomainEventMessage<StubDomainEvent>(
                 aggregateIdentifier,
@@ -123,7 +124,7 @@ public class FileSystemEventStoreTest {
 
     @Test
     public void testReadEventsWithIllegalSnapshot() {
-        final XStreamSerializer serializer = spy(new XStreamSerializer());
+        final Serializer serializer = spy(serializer());
         FileSystemEventStore eventStore = new FileSystemEventStore(serializer,
                                                                    new SimpleEventFileResolver(eventFileBaseDir));
 
@@ -152,7 +153,7 @@ public class FileSystemEventStoreTest {
     @Test
     // Issue #25: XStreamFileSystemEventStore fails when event data contains newline character
     public void testSaveStreamAndReadBackIn_NewLineInEvent() {
-        FileSystemEventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(eventFileBaseDir));
+        FileSystemEventStore eventStore = new FileSystemEventStore(serializer(), new SimpleEventFileResolver(eventFileBaseDir));
 
         String description = "This is a description with a \n newline character and weird chars éçè\u6324.";
         StringBuilder stringBuilder = new StringBuilder(description);
@@ -238,7 +239,7 @@ public class FileSystemEventStoreTest {
 
     @Test
     public void testAppendSnapShot() {
-        FileSystemEventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(eventFileBaseDir));
+        FileSystemEventStore eventStore = new FileSystemEventStore(serializer(), new SimpleEventFileResolver(eventFileBaseDir));
 
         AtomicInteger counter = new AtomicInteger(0);
 
@@ -298,5 +299,9 @@ public class FileSystemEventStoreTest {
         public String getDescription() {
             return description;
         }
+    }
+
+    private static Serializer serializer() {
+        return XStreamSerializerFactory.create(StubDomainEvent.class, MyStubDomainEvent.class);
     }
 }
