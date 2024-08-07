@@ -46,8 +46,8 @@ public class ConnectionWrapperFactoryTest {
 
     @Test
     public void testEquals_WithWrapper() {
-        final Runnable runnable = mock(Runnable.class);
-        Connection wrapped = wrap(connection, Runnable.class, runnable, closeHandler);
+        final TestRunnable runnable = mock(TestRunnable.class);
+        Connection wrapped = wrap(connection, TestRunnable.class, runnable, closeHandler);
 
         assertFalse(wrapped.equals(connection));
         assertTrue(wrapped.equals(wrapped));
@@ -63,8 +63,8 @@ public class ConnectionWrapperFactoryTest {
 
     @Test
     public void testHashCode_WithWrapper() throws Exception {
-        final Runnable runnable = mock(Runnable.class);
-        Connection wrapped = wrap(connection, Runnable.class, runnable, closeHandler);
+        final TestRunnable runnable = mock(TestRunnable.class);
+        Connection wrapped = wrap(connection, TestRunnable.class, runnable, closeHandler);
         assertEquals(wrapped.hashCode(), wrapped.hashCode());
     }
 
@@ -73,4 +73,6 @@ public class ConnectionWrapperFactoryTest {
         Connection wrapped = wrap(connection, closeHandler);
         assertEquals(wrapped.hashCode(), wrapped.hashCode());
     }
+
+    private interface TestRunnable extends Runnable {}
 }
