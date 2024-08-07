@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class ConnectionWrapperFactoryTest {
         wrapped.getAutoCommit();
         verify(connection).getAutoCommit();
 
-        verifyNoInteractions(closeHandler);
+        verifyNoMoreInteractions(closeHandler);
 
         wrapped.close();
         verify(connection, never()).close();
