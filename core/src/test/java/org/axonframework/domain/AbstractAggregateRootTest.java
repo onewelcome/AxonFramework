@@ -16,14 +16,19 @@
 
 package org.axonframework.domain;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
-import org.junit.*;
+import org.axonframework.testutils.XStreamSerializerFactory;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -31,6 +36,7 @@ import static org.junit.Assert.*;
 public class AbstractAggregateRootTest {
 
     private AggregateRoot testSubject;
+    private final XStreamSerializer serializer = XStreamSerializerFactory.create(AggregateRoot.class);
 
     @Before
     public void setUp() {
@@ -39,7 +45,6 @@ public class AbstractAggregateRootTest {
 
     @Test
     public void testSerializability_GenericXStreamSerializer() throws IOException {
-        XStreamSerializer serializer = new XStreamSerializer();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(serializer.serialize(testSubject, byte[].class).getData());
 
@@ -59,7 +64,6 @@ public class AbstractAggregateRootTest {
     }
 
     private AggregateRoot deserialized(ByteArrayOutputStream baos) {
-        XStreamSerializer serializer = new XStreamSerializer();
         return (AggregateRoot) serializer.deserialize(new SimpleSerializedObject<byte[]>(baos.toByteArray(),
                                                                                          byte[].class,
                                                                                          "ignored",
