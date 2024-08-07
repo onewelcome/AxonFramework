@@ -34,8 +34,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.WildcardTypePermission;
 import org.axonframework.common.jpa.EntityManagerProvider;
 import org.axonframework.common.jpa.SimpleEntityManagerProvider;
 import org.axonframework.domain.DomainEventMessage;
@@ -57,7 +55,7 @@ import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.SimpleSerializedType;
 import org.axonframework.serializer.UnknownSerializedTypeException;
-import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.upcasting.LazyUpcasterChain;
 import org.axonframework.upcasting.Upcaster;
 import org.axonframework.upcasting.UpcasterChain;
@@ -997,11 +995,7 @@ public class JpaEventStoreTest {
     public static class ContextConfiguration {
         @Bean
         public Serializer serializer() {
-            XStream xStream = new XStream();
-            xStream.addPermission(new WildcardTypePermission(new String[] {
-                StubStateChangedEvent.class.getName()
-            }));
-            return new XStreamSerializer(xStream);
+            return XStreamSerializerFactory.create(StubStateChangedEvent.class);
         }
     }
 }

@@ -23,8 +23,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.WildcardTypePermission;
 import org.axonframework.common.ReflectionUtils;
 import org.axonframework.common.annotation.ClasspathParameterResolverFactory;
 import org.axonframework.common.annotation.FixedValueParameterResolver;
@@ -38,6 +36,7 @@ import org.axonframework.eventhandling.annotation.Timestamp;
 import org.axonframework.eventsourcing.AbstractEventSourcedAggregateRoot;
 import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
@@ -135,11 +134,7 @@ public class AbstractAnnotatedAggregateRootTest {
     public void testSerializationSetsLiveStateToTrue() throws Exception {
         LateIdentifiedAggregate aggregate = new LateIdentifiedAggregate(new StubDomainEvent(false));
         aggregate.commitEvents();
-        XStream xStream = new XStream();
-        xStream.addPermission(new WildcardTypePermission(new String[] {
-            LateIdentifiedAggregate.class.getName()
-        }));
-        final XStreamSerializer serializer = new XStreamSerializer(xStream);
+        final XStreamSerializer serializer = XStreamSerializerFactory.create(LateIdentifiedAggregate.class);
         SerializedObject<String> serialized = serializer.serialize(aggregate, String.class);
 
         LateIdentifiedAggregate deserializedAggregate = serializer.deserialize(serialized);

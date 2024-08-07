@@ -19,8 +19,6 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-
-
     <bean id="eventStore" class="org.axonframework.eventstore.jpa.JpaEventStore">
         <constructor-arg ref="entityManagerProvider"/>
         <constructor-arg ref="serializer"/>
@@ -30,5 +28,4 @@
 
     <!-- Serializer with proper security configuration -->
     <bean class="org.axonframework.eventstore.jpa.JpaEventStoreTest$ContextConfiguration"/>
-<!--    <context:annotation-config/>-->
 </beans>

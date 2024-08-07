@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
@@ -55,6 +56,8 @@ import org.axonframework.serializer.SerializedType;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.SimpleSerializedType;
 import org.axonframework.serializer.UnknownSerializedTypeException;
+import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.upcasting.LazyUpcasterChain;
 import org.axonframework.upcasting.Upcaster;
 import org.axonframework.upcasting.UpcasterChain;
@@ -107,7 +110,8 @@ public class JdbcEventStoreTest {
             }
         }, sqldef);
         eventEntryStore1.createSchema();
-        testSubject = new JdbcEventStore(eventEntryStore1);
+        XStreamSerializer serializer = XStreamSerializerFactory.create(StubStateChangedEvent.class);
+        testSubject = new JdbcEventStore(eventEntryStore1, serializer);
 
         aggregate1 = new StubAggregateRoot(UUID.randomUUID());
         for (int t = 0; t < 10; t++) {
@@ -498,7 +502,7 @@ public class JdbcEventStoreTest {
         reset(eventEntryStore);
         GenericDomainEventMessage<String> eventMessage = new GenericDomainEventMessage<String>(
                 UUID.randomUUID(), 0L, "Mock contents", MetaData.emptyInstance());
-        when(eventEntryStore.fetchAggregateStream(anyString(), any(), anyInt(), anyInt()))
+        when(eventEntryStore.fetchAggregateStream(anyString(), any(), anyLong(), anyInt()))
                 .thenReturn(new ArrayList(Arrays.asList(new DomainEventEntry(
                         "Mock", eventMessage,
                         mockSerializedObject("Mock contents".getBytes()),

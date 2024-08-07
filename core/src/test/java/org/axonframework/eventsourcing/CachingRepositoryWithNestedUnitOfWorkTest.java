@@ -16,6 +16,11 @@
 
 package org.axonframework.eventsourcing;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import net.sf.ehcache.CacheManager;
 import org.axonframework.cache.Cache;
 import org.axonframework.cache.EhCacheAdapter;
@@ -32,20 +37,21 @@ import org.axonframework.eventstore.EventStore;
 import org.axonframework.eventstore.fs.FileSystemEventStore;
 import org.axonframework.eventstore.fs.SimpleEventFileResolver;
 import org.axonframework.eventstore.jpa.JpaEventStore;
+import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.DefaultUnitOfWorkFactory;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.axonframework.unitofwork.UnitOfWorkFactory;
-import org.junit.*;
-import org.junit.rules.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
 
 /**
  * Minimal test cases triggering an issue with the NestedUnitOfWork and the CachingEventSourcingRepository, see <a
@@ -124,7 +130,8 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
         eventBus.subscribe(new LoggingEventListener(events));
         events.clear();
 
-        EventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(tempFolder.newFolder()));
+        XStreamSerializer xStreamSerializer = XStreamSerializerFactory.create(AggregateCreatedEvent.class);
+        EventStore eventStore = new FileSystemEventStore(xStreamSerializer, new SimpleEventFileResolver(tempFolder.newFolder()));
         AggregateFactory<Aggregate> aggregateFactory = new GenericAggregateFactory<Aggregate>(Aggregate.class);
         repository = new CachingEventSourcingRepository<Aggregate>(aggregateFactory, eventStore);
         repository.setEventBus(eventBus);
