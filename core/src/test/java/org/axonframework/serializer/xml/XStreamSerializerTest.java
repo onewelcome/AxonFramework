@@ -16,9 +16,16 @@
 
 package org.axonframework.serializer.xml;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.axonframework.domain.StubDomainEvent;
 import org.axonframework.serializer.Revision;
 import org.axonframework.serializer.SerializedObject;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -27,8 +34,6 @@ import org.junit.Test;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -42,7 +47,7 @@ public class XStreamSerializerTest {
 
     @Before
     public void setUp() {
-        this.testSubject = new XStreamSerializer();
+        this.testSubject = XStreamSerializerFactory.create(StubDomainEvent.class, TestEvent.class);
         this.testEvent = new TestEvent(REGULAR_STRING);
     }
 
