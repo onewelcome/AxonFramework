@@ -16,6 +16,9 @@
 
 package org.axonframework.unitofwork.nesting;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.commandhandling.annotation.CommandHandler;
@@ -35,11 +38,16 @@ import org.axonframework.eventsourcing.annotation.AggregateIdentifier;
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
 import org.axonframework.eventstore.EventStore;
 import org.axonframework.repository.Repository;
+import org.axonframework.serializer.Serializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -52,8 +60,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
 
 /**
  * Rather extensive test that shows the existence of <a href="http://code.google.com/p/axonframework/issues/detail?id=204">issue
@@ -264,6 +270,20 @@ public class TripleUnitOfWorkNestingTest implements EventListener {
         @Override
         public void run() {
             commandBus.dispatch(GenericCommandMessage.asCommandMessage("hello"));
+        }
+    }
+
+    @Configuration
+    public static class ContextConfiguration {
+        @Bean
+        public Serializer serializer() {
+            return XStreamSerializerFactory.create(
+                CreateEvent.class,
+                FirstEvent.class,
+                SecondEvent.class,
+                ThirdEvent.class,
+                StubDomainEvent.class
+            );
         }
     }
 }
