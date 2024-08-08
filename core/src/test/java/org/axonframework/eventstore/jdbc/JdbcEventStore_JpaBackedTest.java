@@ -32,6 +32,7 @@ import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
 import org.axonframework.domain.MetaData;
 import org.axonframework.domain.SimpleDomainEventStream;
+import org.axonframework.eventhandling.scheduling.SimpleTimingSaga;
 import org.axonframework.eventsourcing.annotation.AbstractAnnotatedAggregateRoot;
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
 import org.axonframework.eventstore.EventStreamNotFoundException;
@@ -864,7 +865,7 @@ public class JdbcEventStore_JpaBackedTest {
     public static class ContextConfiguration {
         @Bean
         public Serializer serializer() {
-            return XStreamSerializerFactory.create(StubStateChangedEvent.class);
+            return XStreamSerializerFactory.create(StubStateChangedEvent.class, SimpleTimingSaga.class);
         }
     }
 }

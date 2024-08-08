@@ -41,12 +41,14 @@ import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
 import org.axonframework.domain.MetaData;
 import org.axonframework.domain.SimpleDomainEventStream;
+import org.axonframework.eventhandling.scheduling.SimpleTimingSaga;
 import org.axonframework.eventsourcing.annotation.AbstractAnnotatedAggregateRoot;
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
 import org.axonframework.eventstore.EventStreamNotFoundException;
 import org.axonframework.eventstore.EventVisitor;
 import org.axonframework.eventstore.management.CriteriaBuilder;
 import org.axonframework.repository.ConcurrencyException;
+import org.axonframework.saga.AssociationValue;
 import org.axonframework.serializer.ChainingConverterFactory;
 import org.axonframework.serializer.ConverterFactory;
 import org.axonframework.serializer.SerializedObject;
@@ -995,7 +997,7 @@ public class JpaEventStoreTest {
     public static class ContextConfiguration {
         @Bean
         public Serializer serializer() {
-            return XStreamSerializerFactory.create(StubStateChangedEvent.class);
+            return XStreamSerializerFactory.create(StubStateChangedEvent.class, SimpleTimingSaga.class, AssociationValue.class);
         }
     }
 }
