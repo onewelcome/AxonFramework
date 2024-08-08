@@ -136,7 +136,7 @@ public class DefaultUnitOfWorkTest {
 
         InOrder inOrder = inOrder(mockListener, mockTransactionManager);
         inOrder.verify(mockTransactionManager).rollbackTransaction(any());
-        inOrder.verify(mockListener).onRollback(eq(uow), any(Throwable.class));
+        inOrder.verify(mockListener).onRollback(eq(uow), isNull(Throwable.class));
         inOrder.verify(mockListener).onCleanup(uow);
         verifyNoMoreInteractions(mockListener, mockTransactionManager);
     }

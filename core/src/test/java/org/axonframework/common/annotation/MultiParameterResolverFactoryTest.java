@@ -19,6 +19,7 @@ package org.axonframework.common.annotation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
@@ -78,7 +79,7 @@ public class MultiParameterResolverFactoryTest {
         inOrder.verify(mockFactory1).createInstance(any(Annotation[].class),
                                                     eq(String.class),
                                                     any(Annotation[].class));
-        inOrder.verify(mockResolver1).matches(any(Message.class));
+        inOrder.verify(mockResolver1).matches(isNull(Message.class));
 
         verify(mockFactory2, never()).createInstance(any(Annotation[].class), eq(String.class), any(Annotation[].class));
 

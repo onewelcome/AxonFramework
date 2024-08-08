@@ -113,7 +113,7 @@ public class AggregateAnnotationCommandHandlerTest {
     @Test
     public void testAggregateCommandHandlerThrowsException() {
         String aggregateIdentifier = "abc123";
-        when(mockRepository.load(eq(aggregateIdentifier), anyLong()))
+        when(mockRepository.load(eq(aggregateIdentifier), isNull(Long.class)))
                 .thenReturn(new StubCommandAnnotatedAggregate(aggregateIdentifier));
         commandBus.dispatch(asCommandMessage(new FailingUpdateCommand(aggregateIdentifier, "parameter")),
                             new VoidCallback() {
@@ -172,7 +172,7 @@ public class AggregateAnnotationCommandHandlerTest {
     @Test
     public void testCommandHandlerUpdatesAggregateInstance_AnnotatedMethod() {
         Object aggregateIdentifier = "abc123";
-        when(mockRepository.load(any(Object.class), anyLong()))
+        when(mockRepository.load(any(Object.class), isNull(Long.class)))
                 .thenReturn(new StubCommandAnnotatedAggregate(aggregateIdentifier));
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(new UpdateCommandWithAnnotatedMethod("abc123")),
                             new CommandCallback<Object>() {
@@ -219,7 +219,7 @@ public class AggregateAnnotationCommandHandlerTest {
     @Test
     public void testCommandHandlerUpdatesAggregateInstanceWithNullVersion_AnnotatedMethod() {
         Object aggregateIdentifier = "abc123";
-        when(mockRepository.load(any(Object.class), anyLong()))
+        when(mockRepository.load(any(Object.class), isNull(Long.class)))
                 .thenReturn(new StubCommandAnnotatedAggregate(aggregateIdentifier));
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(
                                     new UpdateCommandWithAnnotatedMethodAndVersion("abc123", null)),
@@ -342,7 +342,7 @@ public class AggregateAnnotationCommandHandlerTest {
         Object aggregateIdentifier = "abc123";
         final StubCommandAnnotatedAggregate aggregate = new StubCommandAnnotatedAggregate(aggregateIdentifier);
         aggregate.initializeEntity("1");
-        when(mockRepository.load(any(Object.class), anyLong())).thenReturn(aggregate);
+        when(mockRepository.load(any(Object.class), isNull(Long.class))).thenReturn(aggregate);
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(
                                     new UpdateEntityStateCommand("abc123")),
                             new CommandCallback<Object>() {
@@ -369,7 +369,7 @@ public class AggregateAnnotationCommandHandlerTest {
         aggregate.initializeEntity("1");
         aggregate.initializeEntity("2");
         aggregate.initializeEntity("3");
-        when(mockRepository.load(any(Object.class), anyLong())).thenReturn(aggregate);
+        when(mockRepository.load(any(Object.class), isNull(Long.class))).thenReturn(aggregate);
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(
                                     new UpdateEntityFromCollectionStateCommand("abc123", "2")),
                             new CommandCallback<Object>() {
@@ -443,7 +443,7 @@ public class AggregateAnnotationCommandHandlerTest {
         final StubCommandAnnotatedAggregate aggregate = new StubCommandAnnotatedAggregate(aggregateIdentifier);
         aggregate.initializeEntity("1");
         aggregate.initializeEntity("2");
-        when(mockRepository.load(any(Object.class), anyLong())).thenReturn(aggregate);
+        when(mockRepository.load(any(Object.class), isNull(Long.class))).thenReturn(aggregate);
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(
                                     new UpdateNestedEntityStateCommand("abc123")),
                             new CommandCallback<Object>() {
@@ -480,7 +480,7 @@ public class AggregateAnnotationCommandHandlerTest {
         aggregate.initializeEntity("1");
         aggregate.initializeEntity("2");
         aggregate.initializeEntity("3");
-        when(mockRepository.load(any(Object.class), anyLong())).thenReturn(aggregate);
+        when(mockRepository.load(any(Object.class), isNull(Long.class))).thenReturn(aggregate);
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(
                                     new UpdateEntityFromMapStateCommand("abc123", "2")),
                             new CommandCallback<Object>() {
