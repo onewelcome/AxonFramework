@@ -1,5 +1,18 @@
 package org.axonframework.unitofwork.nesting;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.domain.AggregateRoot;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.EventBus;
@@ -9,17 +22,15 @@ import org.axonframework.unitofwork.SaveAggregateCallback;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.axonframework.unitofwork.UnitOfWorkListener;
 import org.axonframework.unitofwork.UnitOfWorkListenerAdapter;
-import org.junit.*;
-import org.mockito.*;
+import org.junit.After;
+import org.junit.Test;
+import org.mockito.InOrder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -151,9 +162,9 @@ public class UnitOfWorkNestingTest {
         InOrder inOrder = inOrder(middleListener, innerListener, outerListener);
         inOrder.verify(innerListener).onPrepareCommit(any(UnitOfWork.class), anySet(), anyList());
         inOrder.verify(middleListener).onPrepareCommit(any(UnitOfWork.class), anySet(), anyList());
-        inOrder.verify(innerListener).onRollback(any(UnitOfWork.class), any(Throwable.class));
-        inOrder.verify(middleListener).onRollback(any(UnitOfWork.class), any(Throwable.class));
-        inOrder.verify(outerListener).onRollback(any(UnitOfWork.class), any(Throwable.class));
+        inOrder.verify(innerListener).onRollback(any(UnitOfWork.class), isNull(Throwable.class));
+        inOrder.verify(middleListener).onRollback(any(UnitOfWork.class), isNull(Throwable.class));
+        inOrder.verify(outerListener).onRollback(any(UnitOfWork.class), isNull(Throwable.class));
 
         // we don't really care when the cleanup is invoked
         verify(innerListener).onCleanup(any(UnitOfWork.class));
