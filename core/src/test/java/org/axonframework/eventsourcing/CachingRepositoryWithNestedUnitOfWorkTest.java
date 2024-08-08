@@ -130,7 +130,7 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
         eventBus.subscribe(new LoggingEventListener(events));
         events.clear();
 
-        XStreamSerializer xStreamSerializer = XStreamSerializerFactory.create(AggregateCreatedEvent.class);
+        XStreamSerializer xStreamSerializer = XStreamSerializerFactory.create(AggregateCreatedEvent.class, AggregateUpdatedEvent.class);
         EventStore eventStore = new FileSystemEventStore(xStreamSerializer, new SimpleEventFileResolver(tempFolder.newFolder()));
         AggregateFactory<Aggregate> aggregateFactory = new GenericAggregateFactory<Aggregate>(Aggregate.class);
         repository = new CachingEventSourcingRepository<Aggregate>(aggregateFactory, eventStore);
