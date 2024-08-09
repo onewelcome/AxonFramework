@@ -131,7 +131,7 @@ public class EventProcessor implements Runnable {
      *
      * @return true if yielding succeeded, false otherwise.
      */
-    private synchronized boolean yield() {
+    private synchronized boolean doYield() {
         notifyProcessingHandlers();
         if (eventQueue.isEmpty()) {
             cleanUp();
@@ -201,7 +201,7 @@ public class EventProcessor implements Runnable {
                 mayContinue = (processedItems < itemsAtStart
                         && !eventQueue.isEmpty()
                         && !result.requiresRescheduleEvent())
-                        || !yield();
+                        || !doYield();
             }
             notifyProcessingHandlers();
         }
