@@ -16,12 +16,21 @@
 
 package org.axonframework.serializer.bson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import com.thoughtworks.xstream.XStream;
+import org.axonframework.XStreamEnumSetConverter;
 import org.axonframework.serializer.Revision;
 import org.axonframework.serializer.SerializedObject;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -29,8 +38,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -42,7 +49,15 @@ public class DBObjectXStreamSerializerTest {
 
     @Before
     public void setUp() {
-        this.testSubject = new DBObjectXStreamSerializer();
+        XStream xStream = XStreamSerializerFactory.createXStream(
+            SecondTestEvent.class,
+            TestEventWithEnumSet.class,
+            TestEvent.class,
+            StubDomainEvent.class,
+            RevisionSpecifiedEvent.class
+        );
+        xStream.registerConverter(new XStreamEnumSetConverter(TestEventWithEnumSet.SomeEnum.class));
+        this.testSubject = new DBObjectXStreamSerializer(xStream);
     }
 
     @Test

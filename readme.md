@@ -70,7 +70,10 @@ test {
 }
 ```
 
-### Automatic IDE Configuration
+##### Automatic IDE Configuration
 
 If you are using IntelliJ IDEA, the IDE will automatically pick up these configurations from your `pom.xml` or `build.gradle` file.
 Therefore, there is no need to manually configure the test run settings within IntelliJ IDEA.
+
+### MongoDB support needs testing
+All the tests related to MongoDB have been ignored for now.

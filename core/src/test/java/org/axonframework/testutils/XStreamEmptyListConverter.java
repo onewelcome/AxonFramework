@@ -1,21 +1,16 @@
 package org.axonframework.testutils;
 
+import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import com.thoughtworks.xstream.mapper.Mapper;
 
 import java.util.Collections;
 
-public class XStreamEmptyListConverter extends CollectionConverter {
+public class XStreamEmptyListConverter implements Converter {
 
   private static final Class<?> SUPPORTED_TYPE = Collections.emptyList().getClass();
-
-  public XStreamEmptyListConverter(Mapper mapper) {
-    super(mapper, SUPPORTED_TYPE);
-  }
 
   @Override
   public boolean canConvert(Class type) {

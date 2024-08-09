@@ -28,10 +28,10 @@
         <module>distributed-commandbus</module>
         <module>integrationtests</module>
         <!-- We're not using any of those in any of our Axon-based components yet: -->
-        <!-- <module>mongo</module>-->
-        <!-- <module>mongo3</module>-->
+         <module>mongo</module>
+         <module>mongo3</module>
         <!-- <module>incubator/google-app-engine</module>-->
-        <!-- <module>amqp</module>-->
+         <module>amqp</module>
         <module>monitoring-jmx</module>
         <module>quickstart</module>
     </modules>
