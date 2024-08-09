@@ -16,16 +16,21 @@
 
 package org.axonframework.integration.eventbus;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.EventListener;
 import org.axonframework.integration.StubDomainEvent;
-import org.junit.*;
-import org.mockito.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.integration.Message;
 import org.springframework.integration.core.MessageHandler;
 import org.springframework.integration.core.SubscribableChannel;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -98,12 +103,6 @@ public class SpringIntegrationEventBusTest {
     }
 
     private Message<?> messageContainingEvent(final StubDomainEvent event) {
-        return argThat(new ArgumentMatcher<Message<?>>() {
-            @Override
-            public boolean matches(Object argument) {
-                Message message = (Message) argument;
-                return event.equals(message.getPayload());
-            }
-        });
+        return argThat(message -> event.equals(message.getPayload()));
     }
 }

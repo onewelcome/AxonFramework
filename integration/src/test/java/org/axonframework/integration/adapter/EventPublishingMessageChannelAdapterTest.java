@@ -16,15 +16,18 @@
 
 package org.axonframework.integration.adapter;
 
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.integration.StubDomainEvent;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.integration.MessageRejectedException;
 import org.springframework.integration.message.GenericMessage;
-
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze

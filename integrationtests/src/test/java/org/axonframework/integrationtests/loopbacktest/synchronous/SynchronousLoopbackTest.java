@@ -16,6 +16,17 @@
 
 package org.axonframework.integrationtests.loopbacktest.synchronous;
 
+import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.SimpleCommandBus;
@@ -39,19 +50,14 @@ import org.axonframework.repository.LockManager;
 import org.axonframework.repository.OptimisticLockManager;
 import org.axonframework.repository.PessimisticLockManager;
 import org.axonframework.repository.Repository;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.*;
 
 /**
  * Tests for issue #119
