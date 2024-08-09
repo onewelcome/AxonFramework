@@ -76,4 +76,4 @@ If you are using IntelliJ IDEA, the IDE will automatically pick up these configu
 Therefore, there is no need to manually configure the test run settings within IntelliJ IDEA.
 
 ### MongoDB support needs testing
-All the tests related to MongoDB have been ignored for now.
+Some of the tests related to MongoDB have been ignored for now.

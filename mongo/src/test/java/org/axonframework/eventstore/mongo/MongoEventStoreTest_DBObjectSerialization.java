@@ -42,6 +42,7 @@ import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -66,6 +67,7 @@ import java.util.UUID;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:META-INF/spring/mongo-context_dbobject.xml"})
+@Ignore("We're not using Mongo as a data store in any of our Axon-based projects")
 public class MongoEventStoreTest_DBObjectSerialization {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoEventStoreTest_DBObjectSerialization.class);
