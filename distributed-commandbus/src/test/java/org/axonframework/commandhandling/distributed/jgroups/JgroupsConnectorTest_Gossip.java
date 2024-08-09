@@ -35,6 +35,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.commandhandling.gateway.DefaultCommandGateway;
 import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.jgroups.JChannel;
 import org.jgroups.stack.GossipRouter;
@@ -71,7 +72,7 @@ public class JgroupsConnectorTest_Gossip {
         mockCommandBus1 = spy(new SimpleCommandBus());
         mockCommandBus2 = spy(new SimpleCommandBus());
         clusterName = "test-" + new Random().nextInt(Integer.MAX_VALUE);
-        serializer = spy(new XStreamSerializer());
+        serializer = spy(XStreamSerializerFactory.create());
         connector1 = new JGroupsConnector(channel1, clusterName, mockCommandBus1, serializer);
         connector2 = new JGroupsConnector(channel2, clusterName, mockCommandBus2, serializer);
         gossipRouter = new GossipRouter(12001, "127.0.0.1");

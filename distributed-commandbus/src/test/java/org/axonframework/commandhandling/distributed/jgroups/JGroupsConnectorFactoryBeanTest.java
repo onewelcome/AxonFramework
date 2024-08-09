@@ -34,6 +34,7 @@ import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.SimpleCommandBus;
 import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.jgroups.JChannel;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -64,7 +65,7 @@ public class JGroupsConnectorFactoryBeanTest {
         mockConnector = mock(JGroupsConnector.class);
         mockListener = mock(HashChangeListener.class);
 
-        when(mockApplicationContext.getBean(Serializer.class)).thenReturn(new XStreamSerializer());
+        when(mockApplicationContext.getBean(Serializer.class)).thenReturn(XStreamSerializerFactory.create());
         whenNew(JChannel.class).withParameterTypes(String.class).withArguments(isA(String.class))
                 .thenReturn(mockChannel);
         whenNew(JGroupsConnector.class)
@@ -102,7 +103,7 @@ public class JGroupsConnectorFactoryBeanTest {
         testSubject.setClusterName("ClusterName");
         testSubject.setConfiguration("custom.xml");
         testSubject.setLoadFactor(200);
-        XStreamSerializer serializer = new XStreamSerializer();
+        XStreamSerializer serializer = XStreamSerializerFactory.create();
         testSubject.setSerializer(serializer);
         SimpleCommandBus localSegment = new SimpleCommandBus();
         testSubject.setLocalSegment(localSegment);
