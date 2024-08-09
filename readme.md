@@ -38,7 +38,7 @@ applied whenever the tests are executed.
   <artifactId>maven-surefire-plugin</artifactId>
   <version>3.1.2</version> <!-- Ensure you use an appropriate version -->
   <configuration>
-    <argLine>--add-opens java.base/java.io=ALL-UNNAMED</argLine>
+    <argLine>java.base/java.io=ALL-UNNAMED</argLine>
   </configuration>
 </plugin>
 ```
@@ -54,7 +54,7 @@ your `pom.xml`:
     <artifactId>maven-failsafe-plugin</artifactId>
     <version>3.0.0</version> <!-- Ensure you use an appropriate version -->
     <configuration>
-        <argLine>--add-opens java.base/java.io=ALL-UNNAMED</argLine>
+        <argLine>java.base/java.io=ALL-UNNAMED</argLine>
     </configuration>
 </plugin>
 ```
