@@ -15,6 +15,7 @@ public class XStreamSerializerFactory {
     xStream.registerConverter(new XStreamCopyOnWriteArraySetConverter(xStream.getMapper()));
     xStream.registerConverter(new XStreamUnmodifiableMapConverter(xStream.getMapper()));
     xStream.registerConverter(new XStreamLinkedBlockingDequeConverter(xStream.getMapper()));
+    xStream.registerConverter(new XStreamEmptyListConverter(xStream.getMapper()));
     xStream.addPermission(new ExplicitTypePermission(permittedClasses));
     return xStream;
   }

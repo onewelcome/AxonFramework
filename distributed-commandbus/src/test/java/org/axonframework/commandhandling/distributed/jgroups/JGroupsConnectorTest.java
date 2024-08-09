@@ -16,6 +16,21 @@
 
 package org.axonframework.commandhandling.distributed.jgroups;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.refEq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandHandler;
@@ -26,11 +41,14 @@ import org.axonframework.commandhandling.callbacks.FutureCallback;
 import org.axonframework.commandhandling.distributed.ConsistentHash;
 import org.axonframework.commandhandling.distributed.jgroups.support.callbacks.ReplyingCallback;
 import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.stack.IpAddress;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,9 +56,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -63,7 +78,7 @@ public class JGroupsConnectorTest {
         mockCommandBus1 = spy(new SimpleCommandBus());
         mockCommandBus2 = spy(new SimpleCommandBus());
         clusterName = "test-" + new Random().nextInt(Integer.MAX_VALUE);
-        serializer = new XStreamSerializer();
+        serializer = XStreamSerializerFactory.create();
         connector1 = new JGroupsConnector(channel1, clusterName, mockCommandBus1, serializer);
         connector2 = new JGroupsConnector(channel2, clusterName, mockCommandBus2, serializer);
     }
