@@ -16,11 +16,15 @@
 
 package org.axonframework.contextsupport.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.axonframework.eventstore.fs.EventFileResolver;
 import org.axonframework.eventstore.fs.FileSystemEventStore;
 import org.axonframework.serializer.Serializer;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
@@ -28,8 +32,6 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:contexts/axon-namespace-support-context.xml"})
@@ -49,7 +51,7 @@ public class FileSystemEventStoreBeanDefinitionParserTest {
         ValueHolder reference = definition.getConstructorArgumentValues().getArgumentValue(0, Serializer.class);
         assertNotNull("Event serializer reference is wrong", reference);
         RuntimeBeanReference beanReference = (RuntimeBeanReference) reference.getValue();
-        assertEquals("Event serializer reference is wrong", "eventSerializer", beanReference.getBeanName());
+        assertEquals("Event serializer reference is wrong", "serializer", beanReference.getBeanName());
 
         assertNotNull("File event resolver is missing",
                       definition.getConstructorArgumentValues().getArgumentValue(1, EventFileResolver.class));
