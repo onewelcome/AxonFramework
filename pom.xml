@@ -327,6 +327,7 @@
                         <log4j.version>${log4j.version}</log4j.version>
                         <rabbitmq.version>${rabbitmq.version}</rabbitmq.version>
                     </systemPropertyVariables>
+                    <argLine>--add-opens java.base/java.io=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
             <plugin>

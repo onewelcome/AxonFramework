@@ -26,6 +26,7 @@ import org.axonframework.serializer.AnnotationRevisionResolver;
 import org.axonframework.serializer.SerialVersionUIDRevisionResolver;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -46,7 +47,11 @@ public class JavaSerializationTest {
     @Test
     public void testSerialize_XStreamWithPureJavaReflectionProvider() {
         XStream xstream = new XStream(new PureJavaReflectionProvider());
-        xstream.addPermission(new ExplicitTypePermission(new Class[]{ StubAnnotatedAggregate.class }));
+        xstream.addPermission(new ExplicitTypePermission(new Class[]{
+            StubAnnotatedAggregate.class,
+            GenericDomainEventMessage.class,
+            StubDomainEvent.class
+        }));
         XStreamSerializer serializer = new XStreamSerializer(UTF8, xstream, new SerialVersionUIDRevisionResolver());
 
         StubAnnotatedAggregate aggregateRoot = new StubAnnotatedAggregate(UUID.randomUUID());
@@ -62,12 +67,11 @@ public class JavaSerializationTest {
 
     @Test
     public void testSerialize_XStreamWithDefaultReflectionProvider() {
-        XStream xstream = new XStream();
-        xstream.addPermission(new ExplicitTypePermission(new Class[]{
+        XStream xstream = XStreamSerializerFactory.createXStream(
             StubAnnotatedAggregate.class,
             GenericDomainEventMessage.class,
             StubDomainEvent.class
-        }));
+        );
         XStreamSerializer serializer = new XStreamSerializer(UTF8, xstream, new AnnotationRevisionResolver());
 
         StubAnnotatedAggregate aggregateRoot = new StubAnnotatedAggregate(UUID.randomUUID());
