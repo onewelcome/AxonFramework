@@ -16,24 +16,28 @@
 
 package org.axonframework.commandhandling.distributed.jgroups.support.callbacks;
 
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.refEq;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.distributed.jgroups.CommandResponseProcessingFailedException;
 import org.axonframework.commandhandling.distributed.jgroups.ReplyMessage;
 import org.axonframework.serializer.Serializer;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.junit.*;
-import org.junit.rules.*;
-import org.junit.runner.*;
-import org.mockito.*;
-import org.mockito.runners.*;
-
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * @author Srideep Prasad

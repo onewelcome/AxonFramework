@@ -16,6 +16,13 @@
 
 package org.axonframework.commandhandling.distributed.jgroups;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.CommandMessage;
@@ -29,20 +36,18 @@ import org.axonframework.commandhandling.gateway.DefaultCommandGateway;
 import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.jgroups.JChannel;
 import org.jgroups.stack.GossipRouter;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -115,16 +120,11 @@ public class JgroupsConnectorTest_Gossip {
                 UnresolvedRoutingKeyPolicy.RANDOM_KEY));
         CommandGateway gateway1 = new DefaultCommandGateway(bus1);
 
-        doThrow(new RuntimeException("Mock")).when(serializer).deserialize(argThat(new TypeSafeMatcher<SerializedObject<byte[]>>() {
-            @Override
-            protected boolean matchesSafely(SerializedObject<byte[]> item) {
-                return Arrays.equals("<string>Try this!</string>".getBytes(Charset.forName("UTF-8")), item.getData());
-            }
-
-            @Override
-            public void describeTo(Description description) {
-            }
-        }));
+        doThrow(new RuntimeException("Mock")).when(serializer)
+            .deserialize(argThat(
+                (ArgumentMatcher<SerializedObject<byte[]>>) item ->
+                    Arrays.equals("<string>Try this!</string>".getBytes(Charset.forName("UTF-8")), item.getData())
+            ));
 
         try {
             gateway1.sendAndWait("Try this!");

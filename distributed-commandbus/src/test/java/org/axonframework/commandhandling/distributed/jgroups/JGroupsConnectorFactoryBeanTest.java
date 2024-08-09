@@ -18,7 +18,7 @@ package org.axonframework.commandhandling.distributed.jgroups;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.isNull;
@@ -66,7 +66,7 @@ public class JGroupsConnectorFactoryBeanTest {
         whenNew(JChannel.class).withParameterTypes(String.class).withArguments(isA(String.class))
                 .thenReturn(mockChannel);
         whenNew(JGroupsConnector.class)
-                .withArguments(isA(JChannel.class), isA(String.class), isA(CommandBus.class), isA(Serializer.class), anyObject())
+                .withArguments(isA(JChannel.class), isA(String.class), isA(CommandBus.class), isA(Serializer.class), any())
                 .thenReturn(mockConnector);
 
         testSubject = new JGroupsConnectorFactoryBean();
