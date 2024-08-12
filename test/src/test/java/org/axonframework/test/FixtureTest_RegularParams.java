@@ -16,11 +16,14 @@
 
 package org.axonframework.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.axonframework.repository.AggregateNotFoundException;
 import org.axonframework.test.matchers.FieldFilter;
+import org.axonframework.test.matchers.IgnoreField;
 import org.hamcrest.core.IsNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,29 +114,27 @@ public class FixtureTest_RegularParams {
     public void testFixtureDetectsStateChangeOutsideOfHandler_ExplicitValue() {
         List<?> givenEvents = Arrays.asList(new MyEvent("aggregateId", 1), new MyEvent("aggregateId", 2),
                                             new MyEvent("aggregateId", 3));
-        try {
+
+        Throwable throwable = catchThrowable(() ->
             fixture.registerAnnotatedCommandHandler(new MyCommandHandler(fixture.getRepository(),
-                                                                         fixture.getEventBus()))
-                   .given(givenEvents)
-                   .when(new IllegalStateChangeCommand("aggregateId", 5));
-            fail("Expected AssertionError");
-        } catch (AssertionError e) {
-            assertTrue("Wrong message: " + e.getMessage(), e.getMessage().contains(".lastNumber\""));
-            assertTrue("Wrong message: " + e.getMessage(), e.getMessage().contains("<5>"));
-            assertTrue("Wrong message: " + e.getMessage(), e.getMessage().contains("<4>"));
-        }
+                    fixture.getEventBus()))
+                .given(givenEvents)
+                .when(new IllegalStateChangeCommand("aggregateId", 5))
+        );
+
+        assertThat(throwable).isExactlyInstanceOf(AxonAssertionError.class)
+            .hasMessageContainingAll(
+                "Illegal state change detected! Property \"org.axonframework.test.StandardAggregate.lastNumber\" has different value when sourcing events.",
+                "Working aggregate value:     <5>",
+                "Value after applying events: <4>"
+            );
     }
 
     @Test
     public void testFixtureIgnoredStateChangeInFilteredField() {
         List<?> givenEvents = Arrays.asList(new MyEvent("aggregateId", 1), new MyEvent("aggregateId", 2),
                                             new MyEvent("aggregateId", 3));
-        fixture.registerFieldFilter(new FieldFilter() {
-            @Override
-            public boolean accept(String field) {
-                return !field.equals("lastNumber");
-            }
-        });
+        fixture.registerFieldFilter(new IgnoreField(MyCommandHandler.class,"lastNumber"));
         fixture.registerAnnotatedCommandHandler(new MyCommandHandler(fixture.getRepository(),
                                                                      fixture.getEventBus()))
                .given(givenEvents)
@@ -342,19 +343,22 @@ public class FixtureTest_RegularParams {
                                             new MyEvent("aggregateId", 3));
         MyCommandHandler commandHandler = new MyCommandHandler(fixture.getRepository(),
                                                                fixture.getEventBus());
-        try {
+
+        Throwable throwable = catchThrowable(() ->
             fixture
-                    .registerAnnotatedCommandHandler(commandHandler)
-                    .given(givenEvents)
-                    .when(new TestCommand("aggregateId"))
-                    .expectEvents(new MyEvent("aggregateId", 5)) // should be 4
-                    .expectVoidReturnType();
-            fail("Expected an AxonAssertionError");
-        } catch (AxonAssertionError e) {
-            assertTrue(e.getMessage().contains(
-                    "In an event of type [MyEvent], the property [someValue] was not as expected."));
-            assertTrue(e.getMessage().contains("Expected <5> but got <4>"));
-        }
+                .registerAnnotatedCommandHandler(commandHandler)
+                .given(givenEvents)
+                .when(new TestCommand("aggregateId"))
+                .expectEvents(new MyEvent("aggregateId", 5)) // should be 4
+                .expectVoidReturnType()
+        );
+
+        assertThat(throwable).isExactlyInstanceOf(AxonAssertionError.class)
+            .hasMessageContainingAll(
+                "field/property 'someValue' differ",
+                "- actual value  : 4",
+                "- expected value: 5"
+            );
     }
 
     @Test
@@ -363,19 +367,20 @@ public class FixtureTest_RegularParams {
                                             new MyEvent("aggregateId", 3));
         MyCommandHandler commandHandler = new MyCommandHandler(fixture.getRepository(),
                                                                fixture.getEventBus());
-        try {
+        Throwable throwable = catchThrowable(() ->
             fixture
                     .registerAnnotatedCommandHandler(commandHandler)
                     .given(givenEvents)
                     .when(new TestCommand("aggregateId"))
                     .expectEvents(new MyEvent("aggregateId", null)) // should be 4
-                    .expectVoidReturnType();
-            fail("Expected an AxonAssertionError");
-        } catch (AxonAssertionError e) {
-            assertTrue(e.getMessage().contains(
-                    "In an event of type [MyEvent], the property [someValue] was not as expected."));
-            assertTrue(e.getMessage().contains("Expected <<null>> but got <4>"));
-        }
+                    .expectVoidReturnType()
+        );
+        assertThat(throwable).isExactlyInstanceOf(AxonAssertionError.class)
+            .hasMessageContainingAll(
+                "field/property 'someValue' differ",
+                "- actual value  : 4",
+                "- expected value: null"
+            );
     }
 
     @Test
@@ -384,18 +389,21 @@ public class FixtureTest_RegularParams {
                                             new MyEvent("aggregateId", 3));
         MyCommandHandler commandHandler = new MyCommandHandler(fixture.getRepository(),
                                                                fixture.getEventBus());
-        try {
+
+        Throwable throwable = catchThrowable(() ->
             fixture
                     .registerAnnotatedCommandHandler(commandHandler)
                     .given(givenEvents)
                     .when(new StrangeCommand("aggregateId"))
                     .expectEvents(new MyEvent("aggregateId", 4)) // should be 4
-                    .expectException(StrangeCommandReceivedException.class);
-            fail("Expected an AxonAssertionError");
-        } catch (AxonAssertionError e) {
-            assertTrue(e.getMessage().contains("The stored events do not match the published events."));
-            assertTrue(e.getMessage().contains(" <|> org.axonframework.test.MyApplicationEvent"));
-            assertTrue(e.getMessage().contains("probable cause"));
-        }
+                    .expectException(StrangeCommandReceivedException.class)
+        );
+
+        assertThat(throwable).isExactlyInstanceOf(AxonAssertionError.class)
+            .hasMessageContainingAll(
+                "The stored events do not match the published events.",
+                " <|> org.axonframework.test.MyApplicationEvent",
+                "probable cause"
+            );
     }
 }
