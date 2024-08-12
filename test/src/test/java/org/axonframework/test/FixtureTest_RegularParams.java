@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.axonframework.repository.AggregateNotFoundException;
-import org.axonframework.test.matchers.FieldFilter;
 import org.axonframework.test.matchers.IgnoreField;
 import org.hamcrest.core.IsNull;
 import org.junit.Before;
@@ -72,12 +71,7 @@ public class FixtureTest_RegularParams {
         ResultValidator validator = fixture
                 .registerAnnotatedCommandHandler(new MyCommandHandler(fixture.getRepository(),
                                                                       fixture.getEventBus()))
-                .registerFieldFilter(new FieldFilter() {
-                    @Override
-                    public boolean accept(String field) {
-                        return !field.equals("someBytes");
-                    }
-                })
+                .registerFieldFilter(new IgnoreField(MyEvent.class,"someBytes"))
                 .given(new MyEvent("aggregateId", 1))
                 .when(new TestCommand("aggregateId"));
         validator.expectReturnValue(null);
@@ -134,7 +128,7 @@ public class FixtureTest_RegularParams {
     public void testFixtureIgnoredStateChangeInFilteredField() {
         List<?> givenEvents = Arrays.asList(new MyEvent("aggregateId", 1), new MyEvent("aggregateId", 2),
                                             new MyEvent("aggregateId", 3));
-        fixture.registerFieldFilter(new IgnoreField(MyCommandHandler.class,"lastNumber"));
+        fixture.registerFieldFilter(new IgnoreField("lastNumber"));
         fixture.registerAnnotatedCommandHandler(new MyCommandHandler(fixture.getRepository(),
                                                                      fixture.getEventBus()))
                .given(givenEvents)

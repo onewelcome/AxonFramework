@@ -25,10 +25,7 @@ import org.assertj.core.presentation.StandardRepresentation;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -122,10 +119,7 @@ public class EqualFieldsMatcher<T> extends BaseMatcher<T> {
         if (currentFilter instanceof IgnoreField ignoreFieldFilter) {
             fieldsToIgnore.add(ignoreFieldFilter.getField());
         } else if (currentFilter instanceof NonTransientFieldsFilter) {
-            List<String> transientFieldsToIgnore = Arrays.stream(expected.getClass().getDeclaredFields())
-                .filter(field -> Modifier.isTransient(field.getModifiers()))
-                .map(Field::getName)
-                .toList();
+            List<String> transientFieldsToIgnore = TransientFieldsUtil.getTransientFields(expected);
             fieldsToIgnore.addAll(transientFieldsToIgnore);
         } else if (currentFilter instanceof MatchAllFieldFilter matchAllFieldFilter) {
             for (FieldFilter fieldSubFilter : matchAllFieldFilter.getFilters()) {

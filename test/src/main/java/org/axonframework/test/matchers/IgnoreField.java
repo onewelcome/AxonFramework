@@ -28,6 +28,11 @@ public class IgnoreField implements FieldFilter {
 
     private String ignoredField;
 
+    @Deprecated
+    public IgnoreField(String fieldName) {
+        ignoredField = fieldName;
+    }
+
     /**
      * Initialize an instance that ignores the a field with given <code>fieldName</code>, which is declared on the
      * given

@@ -16,30 +16,28 @@
 
 package org.axonframework.test.matchers;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * @author Allard Buijze
  */
-public class NonTransientFieldsFilterTest {
+public class TransientFieldsUtilTest {
 
-    @SuppressWarnings("unused")
-    private transient String transientField;
-    @SuppressWarnings("unused")
-    private String nonTransientField;
-
-    @Test
-    public void testAcceptNonTransientField() throws Exception {
-        assertTrue(NonTransientFieldsFilter.instance()
-                                           .accept("nonTransientField"));
-    }
+    @SuppressWarnings("unused") private transient String transientField;
+    @SuppressWarnings("unused") private transient String transientField2;
+    @SuppressWarnings("unused") private String nonTransientField;
+    @SuppressWarnings("unused") private String nonTransientField2;
 
     @Test
-    public void testRejectTransientField() throws Exception {
-        assertFalse(NonTransientFieldsFilter.instance()
-                                            .accept("transientField"));
+    public void testAcceptNonTransientField() {
+        List<String> transientFields = TransientFieldsUtil.getTransientFields(this);
+
+        assertThat(transientFields)
+            .containsExactlyInAnyOrder("transientField", "transientField2")
+            .doesNotContain("nonTransientField", "nonTransientField2");
     }
 }
