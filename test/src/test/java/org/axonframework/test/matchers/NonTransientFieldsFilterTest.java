@@ -16,10 +16,10 @@
 
 package org.axonframework.test.matchers;
 
-import org.junit.*;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * @author Allard Buijze
@@ -34,12 +34,12 @@ public class NonTransientFieldsFilterTest {
     @Test
     public void testAcceptNonTransientField() throws Exception {
         assertTrue(NonTransientFieldsFilter.instance()
-                                           .accept(getClass().getDeclaredField("nonTransientField")));
+                                           .accept("nonTransientField"));
     }
 
     @Test
     public void testRejectTransientField() throws Exception {
         assertFalse(NonTransientFieldsFilter.instance()
-                                            .accept(getClass().getDeclaredField("transientField")));
+                                            .accept("transientField"));
     }
 }

@@ -16,18 +16,19 @@
 
 package org.axonframework.test;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.axonframework.repository.AggregateNotFoundException;
 import org.axonframework.test.matchers.FieldFilter;
 import org.hamcrest.core.IsNull;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -70,8 +71,8 @@ public class FixtureTest_RegularParams {
                                                                       fixture.getEventBus()))
                 .registerFieldFilter(new FieldFilter() {
                     @Override
-                    public boolean accept(Field field) {
-                        return !field.getName().equals("someBytes");
+                    public boolean accept(String field) {
+                        return !field.equals("someBytes");
                     }
                 })
                 .given(new MyEvent("aggregateId", 1))
@@ -129,8 +130,8 @@ public class FixtureTest_RegularParams {
                                             new MyEvent("aggregateId", 3));
         fixture.registerFieldFilter(new FieldFilter() {
             @Override
-            public boolean accept(Field field) {
-                return !field.getName().equals("lastNumber");
+            public boolean accept(String field) {
+                return !field.equals("lastNumber");
             }
         });
         fixture.registerAnnotatedCommandHandler(new MyCommandHandler(fixture.getRepository(),

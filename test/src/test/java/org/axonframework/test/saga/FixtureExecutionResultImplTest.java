@@ -22,8 +22,6 @@ import static org.axonframework.test.matchers.Matchers.andNoMore;
 import static org.axonframework.test.matchers.Matchers.equalTo;
 import static org.axonframework.test.matchers.Matchers.exactSequenceOf;
 import static org.axonframework.test.matchers.Matchers.payloadsMatching;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.domain.EventMessage;
@@ -148,12 +146,13 @@ public class FixtureExecutionResultImplTest {
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("First")));
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
 
-        try {
-            testSubject.expectDispatchedCommandsEqualTo(new SimpleCommand("Second"), new SimpleCommand("Thrid"));
-            fail("Expected exception");
-        } catch (AxonAssertionError e) {
-            assertTrue("Wrong message: " + e.getMessage(), e.getMessage().contains("expected <Second>"));
-        }
+        Throwable throwable = catchThrowable(() ->
+            testSubject.expectDispatchedCommandsEqualTo(new SimpleCommand("Second"), new SimpleCommand("Thrid"))
+        );
+
+        assertThat(throwable).isInstanceOf(AxonAssertionError.class)
+            .hasMessageContaining("field/property 'content' differ")
+            .hasMessageContaining("- actual value  : \"First\"\n- expected value: \"Second\"");
     }
 
     @Test
@@ -161,12 +160,12 @@ public class FixtureExecutionResultImplTest {
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("First")));
         commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
 
-        try {
-            testSubject.expectDispatchedCommandsEqualTo("Second", new SimpleCommand("Thrid"));
-            fail("Expected exception");
-        } catch (AxonAssertionError e) {
-            assertTrue("Wrong message: " + e.getMessage(), e.getMessage().contains("Expected <String>"));
-        }
+        Throwable throwable = catchThrowable(() ->
+            testSubject.expectDispatchedCommandsEqualTo("Second", new SimpleCommand("Thrid"))
+        );
+
+        assertThat(throwable).isInstanceOf(AxonAssertionError.class)
+            .hasMessageContaining("Wrong command type at index 0 (0-based). Expected <String>, but got <SimpleCommand>");
     }
 
     @Test(expected = AxonAssertionError.class)
@@ -376,7 +375,8 @@ public class FixtureExecutionResultImplTest {
 
         assertThat(thrown)
             .isInstanceOf(AxonAssertionError.class)
-            .hasMessageContaining("Field value of 'ComlexCommand.content', expected <Four>, but got <Three>");
+            .hasMessageContaining("field/property 'simpleCommand.content' differ")
+            .hasMessageContaining("- actual value  : \"Three\"\n- expected value: \"Four\"");
     }
 
     @Test
@@ -408,7 +408,8 @@ public class FixtureExecutionResultImplTest {
 
         assertThat(thrown)
             .isInstanceOf(AxonAssertionError.class)
-            .hasMessageContaining("Field value of 'ComplexCommandWithInheritance.content', expected <Four>, but got <Three>");
+            .hasMessageContaining("field/property 'simpleCommand.content' differ")
+            .hasMessageContaining("- actual value  : \"Three\"\n- expected value: \"Four\"");
     }
 
     @Test
@@ -440,10 +441,9 @@ public class FixtureExecutionResultImplTest {
 
         assertThat(thrown)
             .isInstanceOf(AxonAssertionError.class)
-            .hasMessageContaining("Field value of 'ComplexCommandWithInheritance.simpleCommandsMap', expected <{}>")
-            .hasMessageContaining("but got")
-            .hasMessageContaining("second-entry-key=SimpleCommand{content='second-entry-value'}")
-            .hasMessageContaining("first-entry-key=SimpleCommand{content='first-entry-value'}");
+            .hasMessageContaining("field/property 'simpleCommandsMap' differ")
+            .hasMessageContaining("- actual value  : {\"first-entry-key\"=SimpleCommand{content='first-entry-value'}, \"second-entry-key\"=SimpleCommand{content='second-entry-value'}}")
+            .hasMessageContaining("- expected value: {}");
     }
 
     @Test
@@ -478,7 +478,8 @@ public class FixtureExecutionResultImplTest {
 
         assertThat(thrown)
             .isInstanceOf(AxonAssertionError.class)
-            .hasMessageContaining("Field value of 'ComplexCommandWithInheritance.content', expected <Four>, but got <Three>");
+            .hasMessageContaining("field/property 'simpleCommands[1].content' differ")
+            .hasMessageContaining("- actual value  : \"Two\"\n- expected value: \"Wrong Two\"");
     }
 
     private class FailingMatcher<T> implements ArgumentMatcher<List<? extends T>> {
@@ -509,9 +510,9 @@ public class FixtureExecutionResultImplTest {
     }
 
     private static class ComplexCommand {
-        private final String content;
-        private final List<SimpleCommand> simpleCommands;
-        private final SimpleCommand simpleCommand;
+        @SuppressWarnings({ "unused", "FieldCanBeLocal" }) private final String content;
+        @SuppressWarnings({ "unused", "FieldCanBeLocal" }) private final List<SimpleCommand> simpleCommands;
+        @SuppressWarnings({ "unused", "FieldCanBeLocal" }) private final SimpleCommand simpleCommand;
 
         public ComplexCommand(String content, List<SimpleCommand> simpleCommands, SimpleCommand simpleCommand) {
             this.content = content;
@@ -521,7 +522,7 @@ public class FixtureExecutionResultImplTest {
     }
 
     private static class ComplexCommandWithInheritance extends ComplexCommand {
-        private final Map<String, SimpleCommand> simpleCommandsMap;
+        @SuppressWarnings({ "unused", "FieldCanBeLocal" }) private final Map<String, SimpleCommand> simpleCommandsMap;
 
         public ComplexCommandWithInheritance(String content, List<SimpleCommand> simpleCommands, SimpleCommand simpleCommand,
                                              Map<String, SimpleCommand> simpleCommandsMap) {

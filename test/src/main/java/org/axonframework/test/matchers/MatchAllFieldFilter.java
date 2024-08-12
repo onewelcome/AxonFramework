@@ -16,7 +16,6 @@
 
 package org.axonframework.test.matchers;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +31,7 @@ import java.util.List;
  */
 public class MatchAllFieldFilter implements FieldFilter {
 
-    private final List<FieldFilter> filters = new ArrayList<FieldFilter>();
+    protected final List<FieldFilter> filters = new ArrayList<>();
 
     /**
      * Initializes a filter that accepts any field that is accepted by all given <code>filters</code>
@@ -44,12 +43,17 @@ public class MatchAllFieldFilter implements FieldFilter {
     }
 
     @Override
-    public boolean accept(Field field) {
+    public boolean accept(String field) {
         for (FieldFilter filter : filters) {
             if (!filter.accept(field)) {
                 return false;
             }
         }
         return true;
+    }
+
+    // TODO: Broken Liskov Substitution Principle!
+    public List<FieldFilter> getFilters() {
+        return filters;
     }
 }

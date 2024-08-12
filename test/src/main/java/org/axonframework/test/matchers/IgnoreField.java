@@ -18,8 +18,6 @@ package org.axonframework.test.matchers;
 
 import org.axonframework.test.FixtureExecutionException;
 
-import java.lang.reflect.Field;
-
 /**
  * FieldFilter implementation that rejects a given Field
  *
@@ -28,16 +26,7 @@ import java.lang.reflect.Field;
  */
 public class IgnoreField implements FieldFilter {
 
-    private Field ignoredField;
-
-    /**
-     * Initialize an instance that ignores the given <code>field</code>
-     *
-     * @param field The field to ignore
-     */
-    public IgnoreField(Field field) {
-        this.ignoredField = field;
-    }
+    private String ignoredField;
 
     /**
      * Initialize an instance that ignores the a field with given <code>fieldName</code>, which is declared on the
@@ -50,14 +39,20 @@ public class IgnoreField implements FieldFilter {
      */
     public IgnoreField(Class<?> clazz, String fieldName) {
         try {
-            ignoredField = clazz.getDeclaredField(fieldName);
+            clazz.getDeclaredField(fieldName);
+            ignoredField = fieldName;
         } catch (NoSuchFieldException e) {
             throw new FixtureExecutionException("The given field does not exist", e);
         }
     }
 
     @Override
-    public boolean accept(Field field) {
+    public boolean accept(String field) {
         return !field.equals(ignoredField);
+    }
+
+    @Override
+    public String getField() {
+        return ignoredField;
     }
 }
