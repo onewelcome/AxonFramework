@@ -16,6 +16,15 @@
 
 package org.axonframework.test.saga;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.axonframework.test.matchers.Matchers.andNoMore;
+import static org.axonframework.test.matchers.Matchers.equalTo;
+import static org.axonframework.test.matchers.Matchers.exactSequenceOf;
+import static org.axonframework.test.matchers.Matchers.payloadsMatching;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
@@ -25,16 +34,14 @@ import org.axonframework.test.AxonAssertionError;
 import org.axonframework.test.eventscheduler.StubEventScheduler;
 import org.axonframework.test.matchers.AllFieldsFilter;
 import org.axonframework.test.utils.RecordingCommandBus;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.joda.time.Duration;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-
-import static org.axonframework.test.matchers.Matchers.*;
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -324,16 +331,166 @@ public class FixtureExecutionResultImplTest {
         testSubject.expectActiveSagas(1);
     }
 
-    private class FailingMatcher<T> extends BaseMatcher<List<? extends T>> {
+    @Test
+    public void testExpectDispatchedCommands_ObjectsNotImplementingEquals_FailedField2() {
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(
+            new ComplexCommand(
+                "First",
+                List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                new SimpleCommand("Three")
+            )
+        ));
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
+
+        testSubject.expectDispatchedCommandsEqualTo(
+            new ComplexCommand(
+                "First",
+                List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                new SimpleCommand("Three")
+            ),
+            new SimpleCommand("Second")
+        );
+    }
+
+    @Test
+    public void testExpectDispatchedCommands_ObjectsNotImplementingEquals_FailedField3() {
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(
+            new ComplexCommand(
+                "First",
+                List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                new SimpleCommand("Three")
+            )
+        ));
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
+
+        Throwable thrown = catchThrowable(() -> {
+            testSubject.expectDispatchedCommandsEqualTo(
+                new ComplexCommand(
+                    "First",
+                    List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                    new SimpleCommand("Four")
+                ),
+                new SimpleCommand("Second")
+            );
+        });
+
+        assertThat(thrown)
+            .isInstanceOf(AxonAssertionError.class)
+            .hasMessageContaining("Field value of 'ComlexCommand.content', expected <Four>, but got <Three>");
+    }
+
+    @Test
+    public void testExpectDispatchedCommands_ObjectsNotImplementingEquals_FailedField4() {
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(
+            new ComplexCommandWithInheritance(
+                "First",
+                List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                new SimpleCommand("Three"),
+                Map.of(
+                    "first-entry-key", new SimpleCommand("first-entry-value"),
+                    "second-entry-key", new SimpleCommand("second-entry-value")
+                )
+            )
+        ));
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
+
+        Throwable thrown = catchThrowable(() ->
+            testSubject.expectDispatchedCommandsEqualTo(
+                new ComplexCommandWithInheritance(
+                    "First",
+                    List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                    new SimpleCommand("Four"),
+                    Map.of()
+                ),
+                new SimpleCommand("Second")
+            )
+        );
+
+        assertThat(thrown)
+            .isInstanceOf(AxonAssertionError.class)
+            .hasMessageContaining("Field value of 'ComplexCommandWithInheritance.content', expected <Four>, but got <Three>");
+    }
+
+    @Test
+    public void testExpectDispatchedCommands_ObjectsNotImplementingEquals_FailedField5() {
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(
+            new ComplexCommandWithInheritance(
+                "First",
+                List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                new SimpleCommand("Three"),
+                Map.of(
+                    "first-entry-key", new SimpleCommand("first-entry-value"),
+                    "second-entry-key", new SimpleCommand("second-entry-value")
+                )
+            )
+        ));
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
+
+        Throwable thrown = catchThrowable(() ->
+            testSubject.expectDispatchedCommandsEqualTo(
+                new ComplexCommandWithInheritance(
+                    "First",
+                    List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                    new SimpleCommand("Three"),
+                    Map.of()
+                ),
+                new SimpleCommand("Second")
+            )
+        );
+
+        assertThat(thrown)
+            .isInstanceOf(AxonAssertionError.class)
+            .hasMessageContaining("Field value of 'ComplexCommandWithInheritance.simpleCommandsMap', expected <{}>")
+            .hasMessageContaining("but got")
+            .hasMessageContaining("second-entry-key=SimpleCommand{content='second-entry-value'}")
+            .hasMessageContaining("first-entry-key=SimpleCommand{content='first-entry-value'}");
+    }
+
+    @Test
+    public void testExpectDispatchedCommands_ObjectsNotImplementingEquals_FailedField6() {
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(
+            new ComplexCommandWithInheritance(
+                "First",
+                List.of(new SimpleCommand("One"), new SimpleCommand("Two")),
+                new SimpleCommand("Three"),
+                Map.of(
+                    "first-entry-key", new SimpleCommand("first-entry-value"),
+                    "second-entry-key", new SimpleCommand("second-entry-value")
+                )
+            )
+        ));
+        commandBus.dispatch(GenericCommandMessage.asCommandMessage(new SimpleCommand("Second")));
+
+        Throwable thrown = catchThrowable(() ->
+            testSubject.expectDispatchedCommandsEqualTo(
+                new ComplexCommandWithInheritance(
+                    "First",
+                    List.of(new SimpleCommand("One"), new SimpleCommand("Wrong Two")),
+                    new SimpleCommand("Three"),
+                    Map.of(
+                        "first-entry-key", new SimpleCommand("first-entry-value"),
+                        "second-entry-key", new SimpleCommand("second-entry-value")
+                    )
+                ),
+                new SimpleCommand("Second")
+            )
+        );
+
+        assertThat(thrown)
+            .isInstanceOf(AxonAssertionError.class)
+            .hasMessageContaining("Field value of 'ComplexCommandWithInheritance.content', expected <Four>, but got <Three>");
+    }
+
+    private class FailingMatcher<T> implements ArgumentMatcher<List<? extends T>> {
 
         @Override
-        public boolean matches(Object item) {
+        public boolean matches(List<? extends T> item) {
             return false;
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("something you'll never be able to deliver");
+        public String toString() {
+            return "something you'll never be able to deliver";
         }
     }
 
@@ -343,6 +500,33 @@ public class FixtureExecutionResultImplTest {
 
         public SimpleCommand(String content) {
             this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "SimpleCommand{content='%s'}".formatted(content);
+        }
+    }
+
+    private static class ComplexCommand {
+        private final String content;
+        private final List<SimpleCommand> simpleCommands;
+        private final SimpleCommand simpleCommand;
+
+        public ComplexCommand(String content, List<SimpleCommand> simpleCommands, SimpleCommand simpleCommand) {
+            this.content = content;
+            this.simpleCommands = simpleCommands;
+            this.simpleCommand = simpleCommand;
+        }
+    }
+
+    private static class ComplexCommandWithInheritance extends ComplexCommand {
+        private final Map<String, SimpleCommand> simpleCommandsMap;
+
+        public ComplexCommandWithInheritance(String content, List<SimpleCommand> simpleCommands, SimpleCommand simpleCommand,
+                                             Map<String, SimpleCommand> simpleCommandsMap) {
+            super(content, simpleCommands, simpleCommand);
+          this.simpleCommandsMap = simpleCommandsMap;
         }
     }
 }

@@ -16,11 +16,14 @@
 
 package org.axonframework.test.matchers;
 
+import org.assertj.core.api.recursive.comparison.ComparisonDifference;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonDifferenceCalculator;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Matcher that will match an Object if all the fields on that Object contain values equal to the same field in the
@@ -67,43 +70,51 @@ public class EqualFieldsMatcher<T> extends BaseMatcher<T> {
     }
 
     private boolean matchesSafely(Object actual) {
-        return expected.getClass().equals(actual.getClass())
-                && fieldsMatch(expected.getClass(), expected, actual);
+        var configuration = RecursiveComparisonConfiguration.builder()
+            .withStrictTypeChecking(true)
+            .build();
+
+        // Optionally configure the comparison here if needed
+        // e.g., ignoring fields, custom comparators, etc.
+
+        RecursiveComparisonDifferenceCalculator calculator = new RecursiveComparisonDifferenceCalculator();
+        List<ComparisonDifference> comparisonDifferences = calculator.determineDifferences(actual, expected, configuration);
+
+        if (comparisonDifferences.isEmpty()) {
+            return true; // No differences found
+        }
+
+        // Assuming we're interested in the first difference:
+        ComparisonDifference firstDifference = comparisonDifferences.get(0);
+        failedFieldExpectedValue = firstDifference.getExpected();
+        failedFieldActualValue = firstDifference.getActual();
+        failedField = getField(actual.getClass(), firstDifference.getDecomposedPath());
+        return false;
     }
 
-    private boolean fieldsMatch(Class<?> aClass, Object expectedValue, Object actual) {
-        boolean match = true;
-        for (Field field : aClass.getDeclaredFields()) {
-            if (filter.accept(field)) {
-                field.setAccessible(true);
-                try {
-                    Object expectedFieldValue = field.get(expectedValue);
-                    Object actualFieldValue = field.get(actual);
-                    if (expectedFieldValue != null
-                            && actualFieldValue != null
-                            && expectedFieldValue.getClass().isArray()) {
-                        if (!Arrays.deepEquals(new Object[]{expectedFieldValue}, new Object[]{actualFieldValue})) {
-                            failedField = field;
-                            failedFieldExpectedValue = expectedFieldValue;
-                            failedFieldActualValue = actualFieldValue;
-                            return false;
-                        }
-                    } else if ((expectedFieldValue != null && !expectedFieldValue.equals(actualFieldValue))
-                            || (expectedFieldValue == null && actualFieldValue != null)) {
-                        failedField = field;
-                        failedFieldExpectedValue = expectedFieldValue;
-                        failedFieldActualValue = actualFieldValue;
-                        return false;
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new MatcherExecutionException("Could not confirm object equality due to an exception", e);
-                }
+    private Field getField(Class<?> clazz, List<String> decomposedPath) {
+        try {
+            if (decomposedPath.size() > 1) {
+                Field field = findFieldInHierarchy(clazz, decomposedPath.get(0));
+                return getField(field.getType(), decomposedPath.subList(1, decomposedPath.size()));
+            }
+            return clazz.getDeclaredField(decomposedPath.get(0));
+        } catch (NoSuchFieldException e) {
+            throw new MatcherNoSuchFieldException(clazz, decomposedPath, e);
+        }
+    }
+
+    private static Field findFieldInHierarchy(Class<?> clazz, String fieldName) {
+        Class<?> currentClass = clazz;
+
+        while (currentClass != null && currentClass != Object.class) {
+            try {
+                return currentClass.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                currentClass = currentClass.getSuperclass();
             }
         }
-        if (aClass.getSuperclass() != Object.class) {
-            match = fieldsMatch(aClass.getSuperclass(), expectedValue, actual);
-        }
-        return match;
+        throw new MatcherNoSuchFieldException(clazz, fieldName);
     }
 
     /**
@@ -143,6 +154,25 @@ public class EqualFieldsMatcher<T> extends BaseMatcher<T> {
             description.appendText(" (failed on field '")
                        .appendText(failedField.getName())
                        .appendText("')");
+        }
+    }
+
+    public static class MatcherNoSuchFieldException extends RuntimeException {
+
+        private static final String MESSAGE = "In the class %s, could not find the field of a given path of %s";
+
+        public MatcherNoSuchFieldException(Class<?> clazz, List<String> decomposedPath, Throwable cause) {
+            super(
+                MESSAGE.formatted(
+                    clazz.getName(),
+                    String.join(".", decomposedPath)
+                ),
+                cause
+            );
+        }
+
+        public MatcherNoSuchFieldException(Class<?> clazz, String fieldName) {
+            super(MESSAGE.formatted(clazz.getName(), fieldName));
         }
     }
 }
