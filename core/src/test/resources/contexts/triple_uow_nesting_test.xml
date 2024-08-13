@@ -61,13 +61,14 @@
 
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="driverClass" value="org.hsqldb.jdbcDriver"/>
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
         <property name="jdbcUrl" value="jdbc:hsqldb:mem:addressbook"/>
-        <property name="user" value="sa"/>
+        <property name="username" value="sa"/>
         <property name="password" value=""/>
-        <property name="maxPoolSize" value="50"/>
-        <property name="minPoolSize" value="1"/>
+        <property name="maximumPoolSize" value="50"/>
+        <property name="minimumIdle" value="1"/>
+        <property name="poolName" value="HikariCP"/>
     </bean>
 
 </beans>
