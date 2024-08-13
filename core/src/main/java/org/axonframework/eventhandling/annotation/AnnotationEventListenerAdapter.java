@@ -25,8 +25,8 @@ import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventListenerProxy;
 import org.axonframework.eventhandling.replay.ReplayAware;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 /**
  * Adapter that turns any bean with {@link EventHandler} annotated methods into an {@link

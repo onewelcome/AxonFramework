@@ -121,8 +121,8 @@
         <felix.version>4.2.1</felix.version>
         <pax.exam.version>3.4.0</pax.exam.version>
         <pax.url.version>1.6.0</pax.url.version>
-        <jakarta.persistence-api.version>3.2.0</jakarta.persistence-api.version>
-        <hibernate-core.version>6.6.0.Final</hibernate-core.version>
+        <jakarta.persistence-api.version>3.1.0</jakarta.persistence-api.version>
+        <hibernate-platform.version>6.6.0.Final</hibernate-platform.version>
 
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -130,9 +130,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <!-- test dependencies -->
         <dependency>
@@ -273,6 +273,14 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-platform</artifactId>
+                <version>${hibernate-platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -17,13 +17,11 @@
 package org.axonframework.commandhandling.interceptors;
 
 import org.axonframework.commandhandling.StructuralCommandValidationFailedException;
-import org.axonframework.common.AxonNonTransientException;
 
+import jakarta.validation.ConstraintViolation;
 import java.util.Iterator;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
 import java.util.TreeSet;
-import javax.validation.ConstraintViolation;
 
 /**
  * Specialized version of the StructuralCommandValidationFailedException that provides a set of JSR303 constraint

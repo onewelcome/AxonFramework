@@ -29,7 +29,7 @@ import org.axonframework.saga.annotation.SagaEventHandler;
 import org.axonframework.saga.annotation.StartSaga;
 import org.joda.time.Duration;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @author Allard Buijze
