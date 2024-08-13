@@ -118,7 +118,7 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
     CachingEventSourcingRepository<Aggregate> repository;
     UnitOfWorkFactory uowFactory;
     EventBus eventBus;
-    Cache cache;
+    Cache<Object, Aggregate> cache;
     CacheManager ehCacheManager;
 
     final List<String> events = new ArrayList<String>();
@@ -130,12 +130,12 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
     public void setUp() throws Exception {
         ehCacheManager = CacheManagerBuilder.newCacheManagerBuilder()
             .withCache("name", CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                Long.class,
-                String.class,
+                Object.class,
+                Aggregate.class,
                 ResourcePoolsBuilder.heap(100)
             ))
-            .build();
-        cache = new EhCacheAdapter<Long, String>(ehCacheManager.getCache("name", Long.class, String.class));
+            .build(true);
+        cache = new EhCacheAdapter(ehCacheManager.getCache("name", Object.class, Aggregate.class));
 
         eventBus = new SimpleEventBus();
         eventBus.subscribe(new LoggingEventListener(events));
