@@ -22,10 +22,10 @@ import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.joda.time.DateTime;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.Lob;
+import jakarta.persistence.MappedSuperclass;
 import java.util.Arrays;
-import javax.persistence.Basic;
-import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
 
 /**
  * Data needed by different types of event logs.

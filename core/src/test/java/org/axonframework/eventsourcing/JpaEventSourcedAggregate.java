@@ -19,10 +19,10 @@ package org.axonframework.eventsourcing;
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.StubDomainEvent;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.util.Collection;
-import javax.persistence.Basic;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 /**
  * @author Allard Buijze

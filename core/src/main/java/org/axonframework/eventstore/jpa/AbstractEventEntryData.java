@@ -21,12 +21,12 @@ import org.axonframework.serializer.SerializedType;
 import org.axonframework.serializer.SimpleSerializedType;
 import org.joda.time.DateTime;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.MappedSuperclass;
 import java.io.Serializable;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.MappedSuperclass;
 
 /**
  * Abstract JPA Entity, which defines all fields except for the payload and metaData field. Subclasses should declare

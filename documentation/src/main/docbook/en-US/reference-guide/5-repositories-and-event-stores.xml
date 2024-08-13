@@ -305,7 +305,7 @@
                 transactions. The JPA Event Store stores events in so called entries. These entries
                 contain the serialized form of an event, as well as some fields where meta-data is
                 stored for fast lookup of these entries. To use the <code>JpaEventStore</code>, you
-                must have the JPA (<code>javax.persistence</code>) annotations on your classpath. </para>
+                must have the JPA (<code>jakarta.persistence</code>) annotations on your classpath. </para>
             <para>By default, the event store needs you to configure your persistence context
                 (defined in <code>META-INF/persistence.xml</code> file) to contain the classes
                     <code>DomainEventEntry</code> and <code>SnapshotEventEntry</code> (both in the

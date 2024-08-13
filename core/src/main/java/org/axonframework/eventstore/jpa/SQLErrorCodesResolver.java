@@ -21,6 +21,8 @@ import org.axonframework.common.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
+import jakarta.persistence.EntityExistsException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -29,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import javax.persistence.EntityExistsException;
-import javax.sql.DataSource;
 
 /**
  * SQLErrorCodesResolver is an implementation of PersistenceExceptionResolver used to resolve sql error codes to see if

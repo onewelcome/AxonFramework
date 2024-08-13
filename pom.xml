@@ -121,6 +121,8 @@
         <felix.version>4.2.1</felix.version>
         <pax.exam.version>3.4.0</pax.exam.version>
         <pax.url.version>1.6.0</pax.url.version>
+        <jakarta.persistence-api.version>3.2.0</jakarta.persistence-api.version>
+        <hibernate-core.version>6.6.0.Final</hibernate-core.version>
 
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
