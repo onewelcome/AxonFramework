@@ -20,13 +20,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
          http://www.axonframework.org/schema/core http://www.axonframework.org/schema/axon-core.xsd">
 
-    <bean id="cacheAdapter" class="org.axonframework.cache.EhCacheAdapter">
-        <constructor-arg ref="cache">
-        </constructor-arg>
-    </bean>
-    <bean id="cache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-        <property name="cacheName" value="testCache"/>
-    </bean>
+    <!-- Cache configuration -->
+    <bean class="org.axonframework.integrationtests.cache.CacheIntegrationTest$ContextConfiguration"/>
 
     <bean class="org.axonframework.commandhandling.gateway.CommandGatewayFactoryBean">
         <property name="commandBus" ref="commandBus"/>
