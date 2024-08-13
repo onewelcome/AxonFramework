@@ -27,7 +27,7 @@ import org.axonframework.repository.Repository;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -86,7 +86,7 @@ public class AggregateAnnotationCommandHandlerFactoryBean<T extends AggregateRoo
      *
      * @param commandBus the CommandBus to subscribe the handler to
      */
-    @Required
+    @Autowired
     public void setCommandBus(CommandBus commandBus) {
         this.commandBus = commandBus;
     }
@@ -96,7 +96,7 @@ public class AggregateAnnotationCommandHandlerFactoryBean<T extends AggregateRoo
      *
      * @param aggregateType the type of aggregate to inspect for annotations
      */
-    @Required
+    @Autowired
     public void setAggregateType(Class<T> aggregateType) {
         this.aggregateType = aggregateType;
     }
@@ -107,7 +107,7 @@ public class AggregateAnnotationCommandHandlerFactoryBean<T extends AggregateRoo
      *
      * @param repository the Repository from which to load aggregate instances.
      */
-    @Required
+    @Autowired
     public void setRepository(Repository<T> repository) {
         this.repository = repository;
     }
