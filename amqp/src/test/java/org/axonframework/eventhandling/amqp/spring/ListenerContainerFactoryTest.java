@@ -43,7 +43,7 @@ import java.util.concurrent.Executor;
  * @author Allard Buijze
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SimpleMessageListenerContainer.class, LegacyRabbitMqStrategy.class})
+@PrepareForTest(SimpleMessageListenerContainer.class)
 @Ignore("This test uses PowerMock in an incompatible way.")
 public class ListenerContainerFactoryTest {
 
@@ -120,7 +120,7 @@ public class ListenerContainerFactoryTest {
         verify(mockContainer).setTransactionAttribute(transactionAttribute);
         verify(mockContainer).setTransactionManager(mockTransactionManager);
         verify(mockContainer).setChannelTransacted(true);
-        verify(mockContainer).setTxSize(100);
+        verify(mockContainer).setBatchSize(100);
         verify(mockContainer).afterPropertiesSet();
         PowerMockito.verifyNoMoreInteractions(mockContainer);
     }

@@ -41,22 +41,7 @@ public class ListenerContainerFactory implements InitializingBean, ApplicationCo
     private ApplicationContext applicationContext;
     private ConnectionFactory connectionFactory;
 
-    private static final RabbitMqStrategy rabbitMqStrategy;
-
-    static {
-        boolean methodExists;
-        try {
-            SimpleMessageListenerContainer.class.getMethod("setExclusive", boolean.class);
-            methodExists = true;
-        } catch (NoSuchMethodException e) {
-            methodExists = false;
-        }
-        if (methodExists) {
-            rabbitMqStrategy = new DefaultRabbitMqStrategy();
-        } else {
-            rabbitMqStrategy = new LegacyRabbitMqStrategy();
-        }
-    }
+    private final RabbitMqStrategy rabbitMqStrategy = new DefaultRabbitMqStrategy();
 
     /**
      * Creates a new SimpleMessageListenerContainer, initialized with the properties set on this factory.
@@ -78,7 +63,7 @@ public class ListenerContainerFactory implements InitializingBean, ApplicationCo
             newContainer.setPrefetchCount(config.getPrefetchCount());
         }
         if (config.getTxSize() != null) {
-            newContainer.setTxSize(config.getTxSize());
+            newContainer.setBatchSize(config.getTxSize());
         }
         if (config.getAdviceChain() != null) {
             newContainer.setAdviceChain(config.getAdviceChain());
