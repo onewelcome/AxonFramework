@@ -21,20 +21,21 @@ package org.axonframework.cache;
  * providers can be plugged in. In future versions, this abstraction may be replaced with the <code>javax.cache</code>
  * api, as soon as that api is final.
  *
+ * @param <K> The type of key used
+ * @param <V> The type of value stored
+ *
  * @author Allard Buijze
  * @since 2.1.2
  */
-public interface Cache {
+public interface Cache<K, V> {
 
     /**
      * Returns an item from the cache, or <code>null</code> if no item was stored under that key
      *
      * @param key The key under which the item was cached
-     * @param <K> The type of key used
-     * @param <V> The type of value stored
      * @return the item stored under the given key
      */
-    <K, V> V get(K key);
+    V get(K key);
 
     /**
      * Stores the given <code>value</code> in the cache, under given <code>key</code>. If an item already exists,
@@ -42,10 +43,8 @@ public interface Cache {
      *
      * @param key   The key under which to store the item
      * @param value The item to cache
-     * @param <K>   The type of key used
-     * @param <V>   The type of value stored
      */
-    <K, V> void put(K key, V value);
+    void put(K key, V value);
 
     /**
      * Stores the given <code>value</code> in the cache, under given <code>key</code>, if no element is yet available
@@ -53,30 +52,26 @@ public interface Cache {
      *
      * @param key   The key under which to store the item
      * @param value The item to cache
-     * @param <K>   The type of key used
-     * @param <V>   The type of value stored
      * @return <code>true</code> if no value was previously assigned to the key, <code>false</code> otherwise.
      */
-    <K, V> boolean putIfAbsent(K key, V value);
+    boolean putIfAbsent(K key, V value);
 
     /**
      * Removes the entry stored under given <code>key</code>. If no such entry exists, nothing happens.
      *
      * @param key The key under which the item was stored
-     * @param <K> The type of key used
      * @return <code>true</code> if a value was previously assigned to the key and has been removed, <code>false</code>
      * otherwise.
      */
-    <K> boolean remove(K key);
+    boolean remove(K key);
 
     /**
      * Indicates whether there is an item stored under given <code>key</code>.
      *
      * @param key The key to check
-     * @param <K> The type of key
      * @return <code>true</code> if an item is available under that key, <code>false</code> otherwise.
      */
-    <K> boolean containsKey(K key);
+    boolean containsKey(K key);
 
     /**
      * Registers the given <code>cacheEntryListener</code> to listen for Cache changes.
@@ -91,6 +86,11 @@ public interface Cache {
      * @param cacheEntryListener The listener to unregister
      */
     void unregisterCacheEntryListener(EntryListener cacheEntryListener);
+
+    /**
+     * Clears the whole cache.
+     */
+    void clear();
 
     /**
      * Interface describing callback methods, which are invoked when changes are made in the underlying cache.

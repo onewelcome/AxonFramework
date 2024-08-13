@@ -24,37 +24,29 @@ package org.axonframework.cache;
  * @author Allard Buijze
  * @since 0.3
  */
-public final class NoCache implements Cache {
-
-    /**
-     * Creates a singleton reference the the NoCache implementation.
-     */
-    public static final NoCache INSTANCE = new NoCache();
-
-    private NoCache() {
-    }
+public final class NoCache<K, V> implements Cache<K, V> {
 
     @Override
-    public <K, V> V get(K key) {
+    public V get(K key) {
         return null;
     }
 
     @Override
-    public void put(Object key, Object value) {
+    public void put(K key, V value) {
     }
 
     @Override
-    public boolean putIfAbsent(Object key, Object value) {
+    public boolean putIfAbsent(K key, V value) {
         return true;
     }
 
     @Override
-    public boolean remove(Object key) {
+    public boolean remove(K key) {
         return false;
     }
 
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(K key) {
         return false;
     }
 
@@ -64,5 +56,10 @@ public final class NoCache implements Cache {
 
     @Override
     public void unregisterCacheEntryListener(EntryListener cacheEntryRemovedListener) {
+    }
+
+    @Override
+    public void clear() {
+        // no-op
     }
 }

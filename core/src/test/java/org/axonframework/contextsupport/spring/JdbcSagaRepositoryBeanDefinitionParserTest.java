@@ -16,19 +16,22 @@
 
 package org.axonframework.contextsupport.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+
 import org.axonframework.cache.NoCache;
 import org.axonframework.saga.repository.CachingSagaRepository;
 import org.axonframework.saga.repository.jdbc.JdbcSagaRepository;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -59,8 +62,8 @@ public class JdbcSagaRepositoryBeanDefinitionParserTest {
         BeanDefinition beanDef = beanFactory.getBeanDefinition("cachingSagaRepository");
         assertEquals(CachingSagaRepository.class.getName(), beanDef.getBeanClassName());
         assertEquals(3, beanDef.getConstructorArgumentValues().getArgumentCount());
-        assertNotSame(NoCache.INSTANCE, getConstructorArgumentValue(beanDef, 1));
-        assertNotSame(NoCache.INSTANCE, getConstructorArgumentValue(beanDef, 2));
+        assertNotSame(new NoCache<>(), getConstructorArgumentValue(beanDef, 1));
+        assertNotSame(new NoCache<>(), getConstructorArgumentValue(beanDef, 2));
 
         assertNotNull(applicationContext.getBean("cachingSagaRepository"));
     }
@@ -70,8 +73,8 @@ public class JdbcSagaRepositoryBeanDefinitionParserTest {
         BeanDefinition beanDef = beanFactory.getBeanDefinition("noCacheSagaRepository");
         assertEquals(CachingSagaRepository.class.getName(), beanDef.getBeanClassName());
         assertEquals(3, beanDef.getConstructorArgumentValues().getArgumentCount());
-        assertSame(NoCache.INSTANCE, getConstructorArgumentValue(beanDef, 1));
-        assertSame(NoCache.INSTANCE, getConstructorArgumentValue(beanDef, 2));
+        assertSame(new NoCache<>(), getConstructorArgumentValue(beanDef, 1));
+        assertSame(new NoCache<>(), getConstructorArgumentValue(beanDef, 2));
 
         assertNotNull(applicationContext.getBean("noCacheSagaRepository"));
     }

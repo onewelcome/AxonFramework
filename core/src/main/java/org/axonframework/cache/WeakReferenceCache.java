@@ -39,11 +39,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Allard Buijze
  * @since 2.2.1
  */
-public class WeakReferenceCache implements Cache {
+public class WeakReferenceCache<K, V> implements Cache<K, V>  {
 
-    private final ConcurrentMap<Object, Entry> cache = new ConcurrentHashMap<Object, Entry>();
-    private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<Object>();
-    private final Set<EntryListener> adapters = new CopyOnWriteArraySet<EntryListener>();
+    private final ConcurrentMap<Object, Entry> cache = new ConcurrentHashMap<>();
+    private final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
+    private final Set<EntryListener> adapters = new CopyOnWriteArraySet<>();
 
     @Override
     public void registerCacheEntryListener(EntryListener entryListener) {
@@ -56,7 +56,13 @@ public class WeakReferenceCache implements Cache {
     }
 
     @Override
-    public <K, V> V get(K key) {
+    public void clear() {
+        purgeItems();
+        cache.clear();
+    }
+
+    @Override
+    public V get(K key) {
         purgeItems();
         final Reference<Object> entry = cache.get(key);
 
@@ -70,7 +76,7 @@ public class WeakReferenceCache implements Cache {
     }
 
     @Override
-    public <K, V> void put(K key, V value) {
+    public void put(K key, V value) {
         if (value == null) {
             throw new IllegalArgumentException("Null values not supported");
         }
@@ -88,7 +94,7 @@ public class WeakReferenceCache implements Cache {
     }
 
     @Override
-    public <K, V> boolean putIfAbsent(K key, V value) {
+    public boolean putIfAbsent(K key, V value) {
         if (value == null) {
             throw new IllegalArgumentException("Null values not supported");
         }
@@ -103,7 +109,7 @@ public class WeakReferenceCache implements Cache {
     }
 
     @Override
-    public <K> boolean remove(K key) {
+    public boolean remove(K key) {
         if (cache.remove(key) != null) {
             for (EntryListener adapter : adapters) {
                 adapter.onEntryRemoved(key);
@@ -114,7 +120,7 @@ public class WeakReferenceCache implements Cache {
     }
 
     @Override
-    public <K> boolean containsKey(K key) {
+    public boolean containsKey(K key) {
         purgeItems();
         final Reference<Object> entry = cache.get(key);
 
