@@ -42,8 +42,8 @@ public class CachingSagaRepository implements SagaRepository {
     private final SagaRepository delegate;
     private final IdentifierBasedLock associationsCacheLock = new IdentifierBasedLock();
     // guarded by "associationsCacheLock"
-    private final Cache associationsCache;
-    private final Cache sagaCache;
+    private final Cache<String, Set<String>> associationsCache;
+    private final Cache<String, Saga> sagaCache;
 
     /**
      * Initializes an instance delegating to the given <code>delegate</code>, storing associations in the given
@@ -53,7 +53,9 @@ public class CachingSagaRepository implements SagaRepository {
      * @param associationsCache The cache to store association information is
      * @param sagaCache         The cache to store Saga instances in
      */
-    public CachingSagaRepository(SagaRepository delegate, Cache associationsCache, Cache sagaCache) {
+    public CachingSagaRepository(SagaRepository delegate,
+                                 Cache<String, Set<String>> associationsCache,
+                                 Cache<String, Saga> sagaCache) {
         Assert.notNull(delegate, "You must provide a SagaRepository instance to delegate to");
         Assert.notNull(associationsCache, "You must provide a Cache instance to store the association values");
         Assert.notNull(sagaCache, "You must provide a Cache instance to store the sagas");

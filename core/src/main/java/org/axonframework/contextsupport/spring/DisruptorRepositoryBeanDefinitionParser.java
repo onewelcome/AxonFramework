@@ -1,5 +1,8 @@
 package org.axonframework.contextsupport.spring;
 
+import static org.axonframework.contextsupport.spring.AutowiredBean.createAutowiredBean;
+import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
+
 import org.axonframework.cache.WeakReferenceCache;
 import org.axonframework.commandhandling.disruptor.DisruptorCommandBus;
 import org.axonframework.common.Assert;
@@ -12,7 +15,7 @@ import org.axonframework.eventsourcing.SnapshotterTrigger;
 import org.axonframework.repository.Repository;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -24,9 +27,6 @@ import org.w3c.dom.Element;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.axonframework.contextsupport.spring.AutowiredBean.createAutowiredBean;
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
 
 /**
  * Bean Definition parsers that parses disruptor-repository elements. These are configurations of repositories to be
@@ -152,7 +152,7 @@ public class DisruptorRepositoryBeanDefinitionParser extends AbstractBeanDefinit
          *
          * @param commandBus DisruptorCommandBus instance to create the repository from
          */
-        @Required
+        @Autowired
         public void setCommandBus(DisruptorCommandBus commandBus) {
             this.commandBus = commandBus;
         }
@@ -163,7 +163,7 @@ public class DisruptorRepositoryBeanDefinitionParser extends AbstractBeanDefinit
          *
          * @param factory the aggregate factory used to create instances for the repository to create
          */
-        @Required
+        @Autowired
         public void setAggregateFactory(AggregateFactory<? extends EventSourcedAggregateRoot> factory) {
             this.factory = factory;
         }

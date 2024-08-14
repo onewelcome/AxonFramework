@@ -34,7 +34,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import net.sf.ehcache.CacheManager;
 import org.axonframework.cache.Cache;
 import org.axonframework.cache.EhCacheAdapter;
 import org.axonframework.domain.DomainEventMessage;
@@ -48,6 +47,10 @@ import org.axonframework.eventstore.PartialStreamSupport;
 import org.axonframework.repository.AggregateNotFoundException;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,19 +69,25 @@ public class CachingEventSourcingRepositoryTest {
     private CachingEventSourcingRepository<StubAggregate> testSubject;
     private EventBus mockEventBus;
     private InMemoryEventStore mockEventStore;
-    private Cache cache;
-    private net.sf.ehcache.Cache ehCache;
+    private Cache<Object, StubAggregate> cache;
+    private org.ehcache.Cache<Object, StubAggregate> ehCache;
 
     @Before
     public void setUp() {
         mockEventStore = spy(new InMemoryEventStore());
-        testSubject = new CachingEventSourcingRepository<StubAggregate>(new StubAggregateFactory(), mockEventStore);
+        testSubject = new CachingEventSourcingRepository<>(new StubAggregateFactory(), mockEventStore);
         mockEventBus = mock(EventBus.class);
         testSubject.setEventBus(mockEventBus);
 
-        final CacheManager cacheManager = CacheManager.getInstance();
-        ehCache = cacheManager.getCache("testCache");
-        cache = spy(new EhCacheAdapter(ehCache));
+        final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .withCache("testCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                Object.class,
+                StubAggregate.class,
+                ResourcePoolsBuilder.heap(100)
+            ))
+            .build(true);
+        ehCache = cacheManager.getCache("testCache", Object.class, StubAggregate.class);
+        cache = spy(new EhCacheAdapter<>(ehCache));
         testSubject.setCache(cache);
     }
 
@@ -130,7 +139,7 @@ public class CachingEventSourcingRepositoryTest {
         verify(mockEventBus).publish(isA(EventMessage.class));
         verify(mockEventBus).publish(isA(EventMessage.class), isA(EventMessage.class));
         verifyNoMoreInteractions(mockEventBus);
-        ehCache.removeAll();
+        ehCache.clear();
 
         reloadedAggregate1 = testSubject.load(aggregate1.getIdentifier(), null);
 

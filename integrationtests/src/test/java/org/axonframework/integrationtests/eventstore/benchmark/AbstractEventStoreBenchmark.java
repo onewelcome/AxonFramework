@@ -42,7 +42,7 @@ public abstract class AbstractEventStoreBenchmark {
     protected abstract void prepareEventStore();
 
     protected static AbstractEventStoreBenchmark prepareBenchMark(String... appContexts) {
-        Assert.notEmpty(appContexts);
+        Assert.notEmpty(appContexts, "The appContexts must not be empty");
         ApplicationContext context = new ClassPathXmlApplicationContext(appContexts);
         return context.getBean(AbstractEventStoreBenchmark.class);
     }

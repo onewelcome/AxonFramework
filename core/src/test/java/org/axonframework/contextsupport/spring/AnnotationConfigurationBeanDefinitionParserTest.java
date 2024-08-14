@@ -16,6 +16,20 @@
 
 package org.axonframework.contextsupport.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.commandhandling.annotation.AnnotationCommandHandlerBeanPostProcessor;
 import org.axonframework.correlation.CorrelationDataProvider;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -26,10 +40,11 @@ import org.axonframework.saga.AbstractSagaManager;
 import org.axonframework.saga.SagaFactory;
 import org.axonframework.saga.SagaManager;
 import org.axonframework.saga.annotation.AsyncAnnotatedSagaManager;
-import org.junit.*;
-import org.junit.runner.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,14 +61,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.lang.reflect.Field;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:contexts/axon-namespace-support-context.xml"})

@@ -27,12 +27,12 @@ import org.axonframework.common.annotation.MethodMessageHandlerInspector;
 import org.axonframework.common.annotation.ParameterResolverFactory;
 import org.axonframework.unitofwork.UnitOfWork;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 /**
  * Adapter that turns any {@link CommandHandler @CommandHandler} annotated bean into a {@link

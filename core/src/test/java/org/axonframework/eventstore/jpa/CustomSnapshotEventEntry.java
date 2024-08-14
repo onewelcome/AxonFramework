@@ -22,8 +22,8 @@ import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.joda.time.DateTime;
 
-import javax.persistence.Entity;
-import javax.persistence.Lob;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 
 /**
  * @author Allard Buijze

@@ -16,13 +16,30 @@
 
 package org.axonframework.saga.repository;
 
-import net.sf.ehcache.CacheManager;
+import static java.util.Collections.singleton;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.cache.Cache;
 import org.axonframework.cache.EhCacheAdapter;
 import org.axonframework.saga.AssociationValue;
 import org.axonframework.saga.Saga;
 import org.axonframework.saga.SagaRepository;
-import org.junit.*;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,36 +47,42 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 /**
  * @author Allard Buijze
  */
 public class CachingSagaRepositoryTest {
 
-    private Cache associationsCache;
-    private org.axonframework.cache.Cache sagaCache;
+    private Cache<String, Set<String>> associationsCache;
+    private Cache<String, Saga> sagaCache;
     private SagaRepository repository;
     private CachingSagaRepository testSubject;
     private CacheManager cacheManager;
-    private net.sf.ehcache.Cache ehCache;
 
     @Before
     public void setUp() throws Exception {
-        ehCache = new net.sf.ehcache.Cache("test", 100, false, false, 10, 10);
-        cacheManager = CacheManager.create();
-        cacheManager.addCache(ehCache);
-        associationsCache = spy(new EhCacheAdapter(ehCache));
-        sagaCache = spy(new EhCacheAdapter(ehCache));
+        cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .withCache("test-saga", CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                String.class,
+                Saga.class,
+                ResourcePoolsBuilder.heap(100)
+            ))
+            .withCache("test-associations", CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                String.class,
+                Set.class,
+                ResourcePoolsBuilder.heap(100)
+            ))
+            .build(true);
+        //noinspection unchecked
+        Class<Set<String>> associationsCacheValueType = (Class<Set<String>>) (Class<?>) Set.class;
+        associationsCache = spy(new EhCacheAdapter<>(cacheManager.getCache("test-associations", String.class, associationsCacheValueType)));
+        sagaCache = spy(new EhCacheAdapter<>(cacheManager.getCache("test-saga", String.class, Saga.class)));
         repository = mock(SagaRepository.class);
         testSubject = new CachingSagaRepository(repository, associationsCache, sagaCache);
     }
 
     @After
     public void tearDown() throws Exception {
-        cacheManager.shutdown();
+        cacheManager.close();
     }
 
     @Test
@@ -100,7 +123,8 @@ public class CachingSagaRepositoryTest {
         final StubSaga saga = new StubSaga("id");
         saga.associate("key", "value");
         testSubject.add(saga);
-        ehCache.removeAll();
+        associationsCache.clear();
+        sagaCache.clear();
         reset(sagaCache, associationsCache);
 
         final AssociationValue associationValue = new AssociationValue("key", "value");
@@ -118,8 +142,8 @@ public class CachingSagaRepositoryTest {
         final StubSaga saga = new StubSaga("id");
         saga.associate("key", "value");
         testSubject.add(saga);
-        ehCache.removeAll();
-
+        associationsCache.clear();
+        sagaCache.clear();
         reset(sagaCache, associationsCache);
 
         when(repository.load("id")).thenReturn(saga);
@@ -137,7 +161,8 @@ public class CachingSagaRepositoryTest {
         final StubSaga saga = new StubSaga("id");
         saga.associate("key", "value");
         testSubject.add(saga);
-        ehCache.removeAll();
+        associationsCache.clear();
+        sagaCache.clear();
 
         saga.associate("new", "id");
         saga.removeAssociationValue("key", "value");

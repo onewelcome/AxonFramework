@@ -1,5 +1,13 @@
 package org.axonframework.saga.annotation;
 
+import static org.axonframework.domain.GenericEventMessage.asEventMessage;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+
 import org.axonframework.common.annotation.ParameterResolverFactory;
 import org.axonframework.common.annotation.SpringBeanParameterResolverFactory;
 import org.axonframework.common.jpa.SimpleEntityManagerProvider;
@@ -12,10 +20,11 @@ import org.axonframework.saga.annotation.AsyncAnnotatedSagaManagerTest.AddAssoci
 import org.axonframework.saga.annotation.AsyncAnnotatedSagaManagerTest.OptionallyCreateNewEvent;
 import org.axonframework.saga.repository.jpa.JpaSagaRepository;
 import org.axonframework.unitofwork.SpringTransactionManager;
-import org.junit.*;
-import org.junit.runner.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,17 +37,13 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import static org.axonframework.domain.GenericEventMessage.asEventMessage;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze

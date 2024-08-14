@@ -16,10 +16,10 @@
 
 package org.axonframework.testutils;
 
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Required;
+import static org.mockito.Mockito.mock;
 
-import static org.mockito.Mockito.*;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Allard Buijze
@@ -49,7 +49,7 @@ public class MockitoMockFactoryBean<T> implements FactoryBean<T> {
         return singleton;
     }
 
-    @Required
+    @Autowired
     public void setMockType(Class<T> mockType) {
         this.mockType = mockType;
     }

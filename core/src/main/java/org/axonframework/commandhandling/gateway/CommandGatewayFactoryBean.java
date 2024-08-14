@@ -16,6 +16,8 @@
 
 package org.axonframework.commandhandling.gateway;
 
+import static java.util.Arrays.asList;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandDispatchInterceptor;
@@ -24,12 +26,10 @@ import org.axonframework.common.AxonConfigurationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.FactoryBeanNotInitializedException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.List;
-
-import static java.util.Arrays.asList;
 
 /**
  * FactoryBean that creates a gateway instance for any given (compatible) interface. If no explicit interface is
@@ -91,7 +91,7 @@ public class CommandGatewayFactoryBean<T> implements FactoryBean<T>, Initializin
      *
      * @param commandBus the command bus on which the Gateway must dispatch commands
      */
-    @Required
+    @Autowired
     public void setCommandBus(CommandBus commandBus) {
         this.commandBus = commandBus;
     }

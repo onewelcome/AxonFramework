@@ -16,6 +16,8 @@
 
 package org.axonframework.commandhandling.annotation;
 
+import static org.axonframework.commandhandling.annotation.CommandMessageHandlerUtils.resolveAcceptedCommandName;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.CommandMessage;
@@ -30,14 +32,12 @@ import org.axonframework.domain.AggregateRoot;
 import org.axonframework.repository.Repository;
 import org.axonframework.unitofwork.UnitOfWork;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import static org.axonframework.commandhandling.annotation.CommandMessageHandlerUtils.resolveAcceptedCommandName;
 
 /**
  * Command handler that handles commands based on {@link org.axonframework.commandhandling.annotation.CommandHandler}

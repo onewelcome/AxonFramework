@@ -16,6 +16,8 @@
 
 package org.axonframework.eventsourcing;
 
+import static java.lang.String.format;
+
 import org.axonframework.common.annotation.ClasspathParameterResolverFactory;
 import org.axonframework.common.annotation.MultiParameterResolverFactory;
 import org.axonframework.common.annotation.ParameterResolverFactory;
@@ -24,11 +26,9 @@ import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.eventsourcing.annotation.AbstractAnnotatedAggregateRoot;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import static java.lang.String.format;
 
 /**
  * AggregateFactory implementation that uses Spring prototype beans to create new uninitialized instances of
@@ -83,7 +83,7 @@ public class SpringPrototypeAggregateFactory<T extends EventSourcedAggregateRoot
      *
      * @param prototypeBeanName the name of the prototype bean this repository serves.
      */
-    @Required
+    @Autowired
     public void setPrototypeBeanName(String prototypeBeanName) {
         this.prototypeBeanName = prototypeBeanName;
     }

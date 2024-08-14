@@ -23,9 +23,9 @@ import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
 import org.axonframework.domain.MetaData;
 
+import jakarta.persistence.MappedSuperclass;
 import java.util.ArrayDeque;
 import java.util.Queue;
-import javax.persistence.MappedSuperclass;
 
 /**
  * Abstract convenience class to be extended by all aggregate roots. The AbstractEventSourcedAggregateRoot tracks all

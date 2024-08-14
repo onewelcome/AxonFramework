@@ -16,6 +16,16 @@
 
 package org.axonframework.eventhandling.amqp.spring;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import org.axonframework.domain.GenericEventMessage;
@@ -29,16 +39,15 @@ import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.NoTransactionManager;
 import org.axonframework.unitofwork.TransactionManager;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -69,7 +78,7 @@ public class SpringAMQPTerminalTest {
     }
 
     @Test
-    public void testSendMessage_NoUnitOfWork() throws IOException {
+    public void testSendMessage_NoUnitOfWork() throws IOException, TimeoutException {
         Connection connection = mock(Connection.class);
         when(connectionFactory.createConnection()).thenReturn(connection);
         Channel transactionalChannel = mock(Channel.class);
@@ -89,7 +98,7 @@ public class SpringAMQPTerminalTest {
     }
 
     @Test
-    public void testSendMessage_WithTransactionalUnitOfWork() throws IOException {
+    public void testSendMessage_WithTransactionalUnitOfWork() throws IOException, TimeoutException {
         TransactionManager<?> mockTransaction = new NoTransactionManager();
         UnitOfWork uow = DefaultUnitOfWork.startAndGet(mockTransaction);
 
@@ -117,7 +126,7 @@ public class SpringAMQPTerminalTest {
     }
 
     @Test
-    public void testSendMessage_WithTransactionalUnitOfWork_ChannelClosedBeforeCommit() throws IOException {
+    public void testSendMessage_WithTransactionalUnitOfWork_ChannelClosedBeforeCommit() throws IOException, TimeoutException {
         TransactionManager<?> mockTransaction = new NoTransactionManager();
         UnitOfWork uow = DefaultUnitOfWork.startAndGet(mockTransaction);
 
@@ -149,7 +158,7 @@ public class SpringAMQPTerminalTest {
     }
 
     @Test
-    public void testSendMessage_WithUnitOfWorkRollback() throws IOException {
+    public void testSendMessage_WithUnitOfWorkRollback() throws IOException, TimeoutException {
         UnitOfWork uow = DefaultUnitOfWork.startAndGet();
 
         Connection connection = mock(Connection.class);

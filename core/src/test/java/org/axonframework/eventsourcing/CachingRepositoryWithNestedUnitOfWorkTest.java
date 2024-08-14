@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import net.sf.ehcache.CacheManager;
 import org.axonframework.cache.Cache;
 import org.axonframework.cache.EhCacheAdapter;
 import org.axonframework.cache.NoCache;
@@ -42,6 +41,11 @@ import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.DefaultUnitOfWorkFactory;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.axonframework.unitofwork.UnitOfWorkFactory;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,7 +118,8 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
     CachingEventSourcingRepository<Aggregate> repository;
     UnitOfWorkFactory uowFactory;
     EventBus eventBus;
-    Cache cache;
+    Cache<Object, Aggregate> cache;
+    CacheManager ehCacheManager;
 
     final List<String> events = new ArrayList<String>();
 
@@ -123,8 +128,14 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
 
     @Before
     public void setUp() throws Exception {
-        final CacheManager cacheManager = CacheManager.getInstance();
-        cache = new EhCacheAdapter(cacheManager.addCacheIfAbsent("name"));
+        ehCacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .withCache("name", CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                Object.class,
+                Aggregate.class,
+                ResourcePoolsBuilder.heap(100)
+            ))
+            .build(true);
+        cache = new EhCacheAdapter(ehCacheManager.getCache("name", Object.class, Aggregate.class));
 
         eventBus = new SimpleEventBus();
         eventBus.subscribe(new LoggingEventListener(events));
@@ -139,9 +150,14 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
         uowFactory = new DefaultUnitOfWorkFactory();
     }
 
+    @After
+    public void tearDown() throws Exception {
+        ehCacheManager.removeCache("name");
+    }
+
     @Test
     public void testWithoutCache() {
-        repository.setCache(NoCache.INSTANCE);
+        repository.setCache(new NoCache<>());
         executeComplexScenario("ComplexWithoutCache");
     }
 
@@ -153,7 +169,7 @@ public class CachingRepositoryWithNestedUnitOfWorkTest {
 
     @Test
     public void testMinimalScenarioWithoutCache() {
-        repository.setCache(NoCache.INSTANCE);
+        repository.setCache(new NoCache<>());
         testMinimalScenario("MinimalScenarioWithoutCache");
     }
 

@@ -41,7 +41,7 @@ import org.axonframework.unitofwork.UnitOfWorkListenerAdapter;
  */
 public class CachingEventSourcingRepository<T extends EventSourcedAggregateRoot> extends EventSourcingRepository<T> {
 
-    private Cache cache = NoCache.INSTANCE;
+    private Cache<Object, T> cache = new NoCache<>();
     private final boolean hasEventStorePartialReadSupport;
     private final PartialStreamSupport eventStore;
 
@@ -130,7 +130,7 @@ public class CachingEventSourcingRepository<T extends EventSourcedAggregateRoot>
      *
      * @param cache the cache to use
      */
-    public void setCache(Cache cache) {
+    public void setCache(Cache<Object, T> cache) {
         this.cache = cache;
     }
 

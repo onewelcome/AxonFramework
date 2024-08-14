@@ -16,19 +16,30 @@
 
 package org.axonframework.integrationtests.cache;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.axonframework.cache.Cache;
+import org.axonframework.cache.EhCacheAdapter;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.gateway.CommandGateway;
-import org.junit.*;
-import org.junit.runner.*;
+import org.axonframework.eventsourcing.EventSourcedAggregateRoot;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.util.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -41,13 +52,13 @@ import static org.junit.Assert.*;
 public class CacheIntegrationTest {
 
     @Autowired
-    private Cache cache;
+    private Cache<String, EventSourcedAggregateRoot<String>> cache;
 
     @Autowired
     private CommandGateway commandGateway;
 
     @Test
-    public void testEntriesEvictedOnProcessingException() throws Exception {
+    public void testEntriesEvictedOnProcessingException() {
         final AtomicLong counter = new AtomicLong();
         cache.registerCacheEntryListener(new Cache.EntryListenerAdapter() {
             @Override
@@ -79,8 +90,29 @@ public class CacheIntegrationTest {
     }
 
     @Test
-    public void testEntriesNeverStoredOnProcessingException() throws Exception {
+    public void testEntriesNeverStoredOnProcessingException() {
         commandGateway.send(new TestAggregateRoot.FailingCreateCommand("1234"));
         assertFalse(cache.containsKey("1234"));
+    }
+
+    @Configuration
+    public static class ContextConfiguration {
+
+        @Bean
+        public Cache<String, EventSourcedAggregateRoot<String>> cacheAdapter() {
+            final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+                .withCache("testCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                    String.class,
+                    EventSourcedAggregateRoot.class,
+                    ResourcePoolsBuilder.heap(100)
+                ))
+                .build(true);
+            //noinspection unchecked
+            var valueType = (Class<EventSourcedAggregateRoot<String>>) (Class<?>) EventSourcedAggregateRoot.class;
+            org.ehcache.Cache<String, EventSourcedAggregateRoot<String>> testCache =
+                cacheManager.getCache("testCache", String.class, valueType);
+            return new EhCacheAdapter<>(testCache);
+
+        }
     }
 }

@@ -44,7 +44,7 @@ import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Test;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;

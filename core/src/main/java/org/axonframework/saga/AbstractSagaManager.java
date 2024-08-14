@@ -1,5 +1,7 @@
 package org.axonframework.saga;
 
+import static java.lang.String.format;
+
 import org.axonframework.common.Assert;
 import org.axonframework.common.Subscribable;
 import org.axonframework.common.lock.IdentifierBasedLock;
@@ -15,12 +17,16 @@ import org.axonframework.unitofwork.UnitOfWorkListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.util.*;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.lang.String.format;
 
 /**
  * Abstract implementation of the SagaManager interface that provides basic functionality required by most SagaManager

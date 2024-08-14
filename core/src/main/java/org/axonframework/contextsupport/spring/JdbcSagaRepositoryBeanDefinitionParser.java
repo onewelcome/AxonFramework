@@ -69,10 +69,10 @@ public class JdbcSagaRepositoryBeanDefinitionParser extends AbstractBeanDefiniti
             cachedRepoDef.setBeanClass(CachingSagaRepository.class);
             final Object sagaCacheReference = cacheConfigElement.hasAttribute(ATTRIBUTE_SAGA_CACHE)
                     ? new RuntimeBeanReference(cacheConfigElement.getAttribute(ATTRIBUTE_SAGA_CACHE))
-                    : NoCache.INSTANCE;
+                    : new NoCache<>();
             final Object associationsCacheReference = cacheConfigElement.hasAttribute(ATTRIBUTE_ASSOCIATIONS_CACHE)
                     ? new RuntimeBeanReference(cacheConfigElement.getAttribute(ATTRIBUTE_ASSOCIATIONS_CACHE))
-                    : NoCache.INSTANCE;
+                    : new NoCache<>();
             cachedRepoDef.getConstructorArgumentValues().addIndexedArgumentValue(0, beanDefinition);
             cachedRepoDef.getConstructorArgumentValues().addIndexedArgumentValue(1, associationsCacheReference);
             cachedRepoDef.getConstructorArgumentValues().addIndexedArgumentValue(2, sagaCacheReference);

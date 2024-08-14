@@ -16,11 +16,11 @@
 
 package org.axonframework.domain;
 
+import jakarta.persistence.Basic;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
 import java.io.Serializable;
-import javax.persistence.Basic;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
-import javax.persistence.Version;
 
 /**
  * Very basic implementation of the AggregateRoot interface. It provides the mechanism to keep track of uncommitted

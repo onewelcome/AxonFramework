@@ -24,7 +24,7 @@ import org.axonframework.repository.GenericJpaRepository;
 import org.axonframework.repository.LockManager;
 import org.axonframework.repository.NullLockManager;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 /**
  * Repository that stores both a (JPA based) relational model of the current state of an aggregate and the events

@@ -16,7 +16,6 @@
 
 package org.axonframework.cache;
 
-import java.io.Serializable;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.Factory;
 import javax.cache.event.CacheEntryCreatedListener;
@@ -27,6 +26,7 @@ import javax.cache.event.CacheEntryListener;
 import javax.cache.event.CacheEntryListenerException;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
+import java.io.Serializable;
 
 /**
  * Cache adapter implementation that allows providers implementing the JCache abstraction to be used.
@@ -35,56 +35,61 @@ import javax.cache.event.CacheEntryUpdatedListener;
  * @since 2.1.2
  */
 @SuppressWarnings("unchecked")
-public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfiguration> {
+public class JCacheAdapter<K, V> extends AbstractCacheAdapter<K, V, CacheEntryListenerConfiguration<K, V>> {
 
-    private final javax.cache.Cache jCache;
+    private final javax.cache.Cache<K, V> jCache;
 
     /**
      * Initialize the adapter to forward call to the given <code>jCache</code> instance
      *
      * @param jCache The cache to forward all calls to
      */
-    public JCacheAdapter(javax.cache.Cache jCache) {
+    public JCacheAdapter(javax.cache.Cache<K, V> jCache) {
         this.jCache = jCache;
     }
 
     @Override
-    public <K, V> V get(K key) {
-        return (V) jCache.get(key);
+    public V get(K key) {
+        return jCache.get(key);
     }
 
     @Override
-    public <K, V> void put(K key, V value) {
+    public void put(K key, V value) {
         jCache.put(key, value);
     }
 
     @Override
-    public <K, V> boolean putIfAbsent(K key, V value) {
+    public boolean putIfAbsent(K key, V value) {
         return jCache.putIfAbsent(key, value);
     }
 
     @Override
-    public <K> boolean remove(K key) {
+    public boolean remove(K key) {
         return jCache.remove(key);
     }
 
     @Override
-    public <K> boolean containsKey(K key) {
+    public boolean containsKey(K key) {
         return jCache.containsKey(key);
     }
 
     @Override
-    protected CacheEntryListenerConfiguration createListenerAdapter(EntryListener cacheEntryListener) {
-        return new JCacheListenerAdapter(cacheEntryListener);
+    public void clear() {
+        jCache.clear();
     }
 
     @Override
-    protected void doUnregisterListener(CacheEntryListenerConfiguration listenerAdapter) {
+    protected CacheEntryListenerConfiguration<K, V> createListenerAdapter(EntryListener cacheEntryListener) {
+        return new JCacheListenerAdapter<>(cacheEntryListener);
+    }
+
+    @Override
+    protected void doUnregisterListener(CacheEntryListenerConfiguration<K, V> listenerAdapter) {
         jCache.deregisterCacheEntryListener(listenerAdapter);
     }
 
     @Override
-    protected void doRegisterListener(CacheEntryListenerConfiguration listenerAdapter) {
+    protected void doRegisterListener(CacheEntryListenerConfiguration<K, V> listenerAdapter) {
         jCache.registerCacheEntryListener(listenerAdapter);
     }
 
@@ -102,7 +107,7 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
         @Override
         public void onCreated(Iterable<CacheEntryEvent<? extends K, ? extends V>> cacheEntryEvents)
                 throws CacheEntryListenerException {
-            for (CacheEntryEvent event : cacheEntryEvents) {
+            for (var event : cacheEntryEvents) {
                 delegate.onEntryCreated(event.getKey(), event.getValue());
             }
         }
@@ -110,7 +115,7 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
         @Override
         public void onExpired(Iterable<CacheEntryEvent<? extends K, ? extends V>> iterable)
                 throws CacheEntryListenerException {
-            for (CacheEntryEvent event : iterable) {
+            for (var event : iterable) {
                 delegate.onEntryExpired(event.getKey());
             }
         }
@@ -138,7 +143,7 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
         @Override
         public void onRemoved(Iterable<CacheEntryEvent<? extends K, ? extends V>> iterable)
                 throws CacheEntryListenerException {
-            for (CacheEntryEvent event : iterable) {
+            for (var event : iterable) {
                 delegate.onEntryRemoved(event.getKey());
             }
         }
@@ -146,13 +151,13 @@ public class JCacheAdapter extends AbstractCacheAdapter<CacheEntryListenerConfig
         @Override
         public void onUpdated(Iterable<CacheEntryEvent<? extends K, ? extends V>> iterable)
                 throws CacheEntryListenerException {
-            for (CacheEntryEvent event : iterable) {
+            for (var event : iterable) {
                 delegate.onEntryUpdated(event.getKey(), event.getValue());
             }
         }
 
         @Override
-        public CacheEntryListener create() {
+        public CacheEntryListener<K, V> create() {
             return this;
         }
     }

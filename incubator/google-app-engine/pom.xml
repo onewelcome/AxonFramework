@@ -78,10 +78,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <!-- for some reason, compilation fails if the persistence-api is not on the classpath with GAE 1.6 -->
-            <groupId>javax.persistence</groupId>
-            <artifactId>persistence-api</artifactId>
-            <version>1.0.2</version>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta.persistence-api.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

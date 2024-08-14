@@ -6,7 +6,41 @@ For more information, visit our website: http://www.axonframework.org
 If you're looking for the issue tracker, visit http://issues.axonframework.org.
 
 # Forked project
+
 This project has been forked since we needed to migrate it to Java 17.
+
+## Changes
+
+### Migrations
+
+1. Migration to Java 17
+2. Migration to Spring Framework 6.x
+3. Migration to Hibernate ORM 6.x
+
+### Changes made due to the migrations
+
+#### Generic caches
+
+Axon Cache is now a generic type. This means that upon registering a cache, both key and value types have to be provided. If a cache is to
+store generic types, then some hacking might be required to define such a cache:
+
+```java
+
+@Bean
+public Cache<String, EventSourcedAggregateRoot<String>> cacheAdapter() {
+  final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+      .withCache("testCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(
+          String.class,
+          EventSourcedAggregateRoot.class,
+          ResourcePoolsBuilder.heap(100)
+      ))
+      .build(true);
+  //noinspection unchecked
+  var valueType = (Class<EventSourcedAggregateRoot<String>>) (Class<?>) EventSourcedAggregateRoot.class;
+  org.ehcache.Cache<String, EventSourcedAggregateRoot<String>> testCache = cacheManager.getCache("testCache", String.class, valueType);
+  return new EhCacheAdapter<>(testCache);
+}
+```
 
 ## Known issues in Java 17+
 
@@ -49,13 +83,14 @@ If your project uses the Failsafe plugin (commonly for integration tests), you c
 your `pom.xml`:
 
 ```xml
+
 <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-failsafe-plugin</artifactId>
-    <version>3.0.0</version> <!-- Ensure you use an appropriate version -->
-    <configuration>
-        <argLine>java.base/java.io=ALL-UNNAMED</argLine>
-    </configuration>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-failsafe-plugin</artifactId>
+  <version>3.0.0</version> <!-- Ensure you use an appropriate version -->
+  <configuration>
+    <argLine>java.base/java.io=ALL-UNNAMED</argLine>
+  </configuration>
 </plugin>
 ```
 
@@ -76,4 +111,5 @@ If you are using IntelliJ IDEA, the IDE will automatically pick up these configu
 Therefore, there is no need to manually configure the test run settings within IntelliJ IDEA.
 
 ### MongoDB support needs testing
+
 Some of the tests related to MongoDB have been ignored for now.
