@@ -115,6 +115,11 @@ setup within the IDE is not required.
 Some tests related to MongoDB and AMQP have been temporarily ignored. If these modules need to be supported, the tests must be fixed and
 re-enabled. Currently, they rely heavily on PowerMock, which does not work with newer Java versions due to forbidden reflection it uses.
 
+### Google App Engine
+
+The Google App Engine module is currently completely disabled. If Google App Engine support is required, the associated tests would need to
+be fixed and re-enabled to verify whether support still functions correctly after the migration to the updated tech stack.
+
 ### Saga's AssociationValueEntry ID
 
 The `id` property in `org.axonframework.saga.repository.jpa.AssociationValueEntry` now uses
