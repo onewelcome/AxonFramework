@@ -1,4 +1,4 @@
-package org.axonframework;
+package org.axonframework.testutils;
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;

@@ -129,6 +129,14 @@ specifying the strategy, Hibernate did not properly generate sequential IDs.
 It's unclear how this functioned correctly before (if at all), so it's important to be aware of this change. It is recommended to
 double-check the behavior of your application using Axon to ensure that this modification has not introduced any unintended changes.
 
+### Instantiating Axon's Serializer
+
+This forked version of the Axon Framework uses an updated version of XStream. The new XStream version prohibits serializing classes that
+have not been explicitly allowed. Ensure that all classes previously permitted for serialization remain allowed after applying this forked
+version of Axon.
+
+For more information, refer to `org.axonframework.testutils.XStreamSerializerFactory`.
+
 ### XStream Converters
 
 Currently, the following XStream converters are used in tests:
