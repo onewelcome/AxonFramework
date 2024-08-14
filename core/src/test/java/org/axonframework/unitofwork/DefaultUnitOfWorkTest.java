@@ -16,9 +16,10 @@
 
 package org.axonframework.unitofwork;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
@@ -44,8 +45,6 @@ import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventListener;
 import org.axonframework.testutils.MockException;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -260,24 +259,13 @@ public class DefaultUnitOfWorkTest {
         doThrow(new MockException()).when(mockEventBus).publish(isA(EventMessage.class));
         testSubject.start();
         testSubject.registerListener(mockListener);
-        testSubject.publishEvent(new GenericEventMessage<Object>(new Object()), mockEventBus);
-        try {
-            testSubject.commit();
-            fail("Expected exception");
-        } catch (RuntimeException e) {
-            assertThat(e, new TypeSafeMatcher<>() {
-                    @Override
-                    protected boolean matchesSafely(RuntimeException exception) {
-                        return "Mock".equals(exception.getMessage());
-                    }
-                    @Override
-                    public void describeTo(Description description) {
-                        description.appendText("Exception with message 'Mock'");
-                    }
-            });
-            assertEquals("Got an exception, but the wrong one", MockException.class, e.getClass());
-            assertEquals("Got an exception, but the wrong one", "Mock", e.getMessage());
-        }
+        testSubject.publishEvent(new GenericEventMessage<>(new Object()), mockEventBus);
+
+        Throwable throwable = catchThrowable(() -> testSubject.commit());
+
+        assertThat(throwable)
+            .isInstanceOf(MockException.class)
+            .hasMessage("Mock");
         verify(mockListener).onPrepareCommit(isA(UnitOfWork.class), anySet(), anyList());
         verify(mockListener).onRollback(isA(UnitOfWork.class), isA(RuntimeException.class));
         verify(mockListener, never()).afterCommit(isA(UnitOfWork.class));
