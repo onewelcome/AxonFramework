@@ -22,9 +22,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.XStream;
-import org.axonframework.XStreamEnumSetConverter;
 import org.axonframework.serializer.Revision;
 import org.axonframework.serializer.SerializedObject;
+import org.axonframework.testutils.XStreamEnumSetConverter;
 import org.axonframework.testutils.XStreamSerializerFactory;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;

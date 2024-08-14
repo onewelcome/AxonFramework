@@ -146,6 +146,7 @@ Currently, the following XStream converters are used in tests:
 - `XStreamLinkedBlockingDequeConverter`
 - `XStreamSerializerSpringConfiguration`
 - `XStreamUnmodifiableMapConverter`
+- `XStreamEnumSetConverter`
 
 When applying this forked version of the Axon Framework, it may be necessary to reuse these converters. If so, they will need to be moved
 from `src/test` to `src/main` and included as part of the distributable JAR.
