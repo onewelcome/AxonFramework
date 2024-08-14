@@ -25,6 +25,7 @@ Axon Cache is now a generic type. When registering a cache, both key and value t
 additional steps may be needed to define the cache:
 
 ```java
+
 @Bean
 public Cache<String, EventSourcedAggregateRoot<String>> cacheAdapter() {
   final CacheManager cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
@@ -67,6 +68,7 @@ To bypass this restriction and allow tests to pass, add the following JVM flag t
 To apply this flag in a Maven project, modify the `maven-surefire-plugin` configuration in your `pom.xml`:
 
 ```xml
+
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-surefire-plugin</artifactId>
@@ -82,6 +84,7 @@ To apply this flag in a Maven project, modify the `maven-surefire-plugin` config
 If your project uses the Failsafe plugin (commonly for integration tests), configure the `maven-failsafe-plugin` in your `pom.xml`:
 
 ```xml
+
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-failsafe-plugin</artifactId>
@@ -111,3 +114,12 @@ setup within the IDE is not required.
 
 Some tests related to MongoDB and AMQP have been temporarily ignored. If these modules need to be supported, the tests must be fixed and
 re-enabled. Currently, they rely heavily on PowerMock, which does not work with newer Java versions due to forbidden reflection it uses.
+
+### Saga's AssociationValueEntry ID
+
+The `id` property in `org.axonframework.saga.repository.jpa.AssociationValueEntry` now uses
+`@GeneratedValue(strategy = GenerationType.IDENTITY)` instead of the default `@GeneratedValue`. This change was necessary because, without
+specifying the strategy, Hibernate did not properly generate sequential IDs.
+
+It's unclear how this functioned correctly before (if at all), so it's important to be aware of this change. It is recommended to
+double-check the behavior of your application using Axon to ensure that this modification has not introduced any unintended changes.
