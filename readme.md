@@ -128,3 +128,21 @@ specifying the strategy, Hibernate did not properly generate sequential IDs.
 
 It's unclear how this functioned correctly before (if at all), so it's important to be aware of this change. It is recommended to
 double-check the behavior of your application using Axon to ensure that this modification has not introduced any unintended changes.
+
+### XStream Converters
+
+Currently, the following XStream converters are used in tests:
+
+- `XStreamCopyOnWriteArraySetConverter`
+- `XStreamEmptyListConverter`
+- `XStreamLinkedBlockingDequeConverter`
+- `XStreamSerializerSpringConfiguration`
+- `XStreamUnmodifiableMapConverter`
+
+When applying this forked version of the Axon Framework, it may be necessary to reuse these converters. If so, they will need to be moved
+from `src/test` to `src/main` and included as part of the distributable JAR.
+
+Additionally, the application using Axon may require additional converters, depending on the data that has already been serialized by the
+previous version of Axon and stored in its database. Proper deserialization of this data using these converters is crucial. Ensure thorough
+testing, preferably using real data from a live environment, to confirm that everything works as expected.
+ 
