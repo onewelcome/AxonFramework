@@ -19,7 +19,6 @@ package org.axonframework.contextsupport.spring;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 
 import org.axonframework.cache.NoCache;
 import org.axonframework.saga.repository.CachingSagaRepository;
@@ -62,8 +61,8 @@ public class JdbcSagaRepositoryBeanDefinitionParserTest {
         BeanDefinition beanDef = beanFactory.getBeanDefinition("cachingSagaRepository");
         assertEquals(CachingSagaRepository.class.getName(), beanDef.getBeanClassName());
         assertEquals(3, beanDef.getConstructorArgumentValues().getArgumentCount());
-        assertNotSame(new NoCache<>(), getConstructorArgumentValue(beanDef, 1));
-        assertNotSame(new NoCache<>(), getConstructorArgumentValue(beanDef, 2));
+        assertThat(getConstructorArgumentValue(beanDef, 1)).isNotExactlyInstanceOf(NoCache.class);
+        assertThat(getConstructorArgumentValue(beanDef, 2)).isNotExactlyInstanceOf(NoCache.class);
 
         assertNotNull(applicationContext.getBean("cachingSagaRepository"));
     }
