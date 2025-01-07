@@ -17,9 +17,15 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <parent>
+        <groupId>com.onegini</groupId>
+        <artifactId>og-parent</artifactId>
+        <version>62</version>
+    </parent>
+
     <groupId>org.axonframework</groupId>
     <artifactId>axon</artifactId>
-    <version>2.4.7-SNAPSHOT</version>
+    <version>${revision}</version>
     <modules>
         <module>core</module>
         <module>integration</module>
@@ -117,7 +123,7 @@
         <spring.version>6.1.11</spring.version>
         <spring-security.version>6.3.1</spring-security.version>
         <rabbitmq.version>5.19.0</rabbitmq.version>
-        <felix.bundle.plugin.version>2.4.0</felix.bundle.plugin.version>
+        <felix.bundle.plugin.version>6.0.0</felix.bundle.plugin.version>
         <felix.version>4.2.1</felix.version>
         <pax.exam.version>3.4.0</pax.exam.version>
         <pax.url.version>1.6.0</pax.url.version>
@@ -378,27 +384,6 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- just to make sure deployed artifacts are always built (and tested) using JDK 6 -->
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.1.1</version>
-                <executions>
-                    <execution>
-                        <id>enforce-java</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireJavaVersion>
-                                    <version>1.6</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
