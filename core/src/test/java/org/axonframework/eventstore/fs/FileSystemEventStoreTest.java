@@ -16,6 +16,20 @@
 
 package org.axonframework.eventstore.fs;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -23,11 +37,13 @@ import org.axonframework.domain.SimpleDomainEventStream;
 import org.axonframework.domain.StubDomainEvent;
 import org.axonframework.eventstore.EventStoreException;
 import org.axonframework.repository.ConflictingModificationException;
+import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.SimpleSerializedObject;
-import org.axonframework.serializer.xml.XStreamSerializer;
-import org.junit.*;
-import org.junit.rules.*;
-import org.mockito.*;
+import org.axonframework.testutils.XStreamSerializerFactory;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +52,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -58,7 +71,7 @@ public class FileSystemEventStoreTest {
 
     @Test
     public void testSaveStreamAndReadBackIn() {
-        FileSystemEventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(eventFileBaseDir));
+        FileSystemEventStore eventStore = new FileSystemEventStore(serializer(), new SimpleEventFileResolver(eventFileBaseDir));
 
         GenericDomainEventMessage<StubDomainEvent> event1 = new GenericDomainEventMessage<StubDomainEvent>(
                 aggregateIdentifier,
@@ -111,7 +124,7 @@ public class FileSystemEventStoreTest {
 
     @Test
     public void testReadEventsWithIllegalSnapshot() {
-        final XStreamSerializer serializer = spy(new XStreamSerializer());
+        final Serializer serializer = spy(serializer());
         FileSystemEventStore eventStore = new FileSystemEventStore(serializer,
                                                                    new SimpleEventFileResolver(eventFileBaseDir));
 
@@ -127,7 +140,7 @@ public class FileSystemEventStoreTest {
         eventStore.appendEvents("test", stream);
 
         doReturn(new SimpleSerializedObject<byte[]>("error".getBytes(), byte[].class, String.class.getName(), "old"))
-                .when(serializer).serialize(anyObject(), eq(byte[].class));
+                .when(serializer).serialize(any(), eq(byte[].class));
         eventStore.appendSnapshotEvent("test", event2);
 
         DomainEventStream actual = eventStore.readEvents("test", aggregateIdentifier);
@@ -140,7 +153,7 @@ public class FileSystemEventStoreTest {
     @Test
     // Issue #25: XStreamFileSystemEventStore fails when event data contains newline character
     public void testSaveStreamAndReadBackIn_NewLineInEvent() {
-        FileSystemEventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(eventFileBaseDir));
+        FileSystemEventStore eventStore = new FileSystemEventStore(serializer(), new SimpleEventFileResolver(eventFileBaseDir));
 
         String description = "This is a description with a \n newline character and weird chars éçè\u6324.";
         StringBuilder stringBuilder = new StringBuilder(description);
@@ -181,8 +194,8 @@ public class FileSystemEventStoreTest {
                 .thenReturn(mockInputStream);
         IOException exception = new IOException("Mock Exception");
         when(mockInputStream.read()).thenThrow(exception);
-        when(mockInputStream.read(Matchers.<byte[]>any())).thenThrow(exception);
-        when(mockInputStream.read(Matchers.<byte[]>any(), anyInt(), anyInt())).thenThrow(exception);
+        when(mockInputStream.read(any())).thenThrow(exception);
+        when(mockInputStream.read(any(), anyInt(), anyInt())).thenThrow(exception);
         FileSystemEventStore eventStore = new FileSystemEventStore(mockEventFileResolver);
 
         try {
@@ -226,7 +239,7 @@ public class FileSystemEventStoreTest {
 
     @Test
     public void testAppendSnapShot() {
-        FileSystemEventStore eventStore = new FileSystemEventStore(new SimpleEventFileResolver(eventFileBaseDir));
+        FileSystemEventStore eventStore = new FileSystemEventStore(serializer(), new SimpleEventFileResolver(eventFileBaseDir));
 
         AtomicInteger counter = new AtomicInteger(0);
 
@@ -286,5 +299,9 @@ public class FileSystemEventStoreTest {
         public String getDescription() {
             return description;
         }
+    }
+
+    private static Serializer serializer() {
+        return XStreamSerializerFactory.create(StubDomainEvent.class, MyStubDomainEvent.class);
     }
 }

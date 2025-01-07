@@ -16,10 +16,21 @@
 
 package org.axonframework.contextsupport.spring;
 
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -28,9 +39,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -53,7 +61,7 @@ public class AutowiredDependencyFactoryBeanTest {
         when(mockApplicationContext.getAutowireCapableBeanFactory()).thenReturn(mockBeanFactory);
         when(mockApplicationContext.getBean(anyString())).thenReturn("mockBean");
         when(mockBeanFactory.containsBeanDefinition(anyString())).thenReturn(true);
-        when(mockApplicationContext.getBeanNamesForType(Matchers.<Class<?>>any())).thenAnswer(new Answer<Object>() {
+        when(mockApplicationContext.getBeanNamesForType(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 List<String> beanNames = beansOfType.get(invocation.getArguments()[0]);

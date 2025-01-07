@@ -16,17 +16,24 @@
 
 package org.axonframework.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.common.jpa.SimpleEntityManagerProvider;
 import org.axonframework.domain.AbstractAggregateRoot;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
+import jakarta.persistence.EntityManager;
 import java.util.UUID;
-import javax.persistence.EntityManager;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  *

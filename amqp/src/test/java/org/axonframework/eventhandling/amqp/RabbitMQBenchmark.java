@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author Allard Buijze
@@ -35,7 +36,7 @@ public class RabbitMQBenchmark {
     private static final int COMMIT_SIZE = 10;
     private static final int COMMIT_COUNT = 1500;
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException, TimeoutException {
         final Connection connection = new ConnectionFactory().newConnection();
         final Channel channel = connection.createChannel();
         String queueName = channel.queueDeclare().getQueue();
@@ -71,7 +72,7 @@ public class RabbitMQBenchmark {
                             }
                             localChannel.close();
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | TimeoutException e) {
                         e.printStackTrace();
                     }
                 }
@@ -125,7 +126,7 @@ public class RabbitMQBenchmark {
                                 localChannel.close();
                             }
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | TimeoutException e) {
                         e.printStackTrace();
                     }
                 }

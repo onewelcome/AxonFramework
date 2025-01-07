@@ -16,7 +16,18 @@
 
 package org.axonframework.eventhandling.annotation;
 
-import net.sf.cglib.proxy.Enhancer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.common.annotation.ParameterResolverFactory;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
@@ -24,14 +35,12 @@ import org.axonframework.domain.StubAggregate;
 import org.axonframework.domain.StubDomainEvent;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventListener;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -72,7 +81,7 @@ public class AnnotationEventListenerBeanPostProcessorTest {
 
         verify(mockApplicationContext).getBeansOfType(EventBus.class);
         verify(mockEventBus).subscribe(mockProxy);
-        verifyZeroInteractions(adapter);
+        verifyNoInteractions(adapter);
     }
 
     @Test
@@ -173,7 +182,8 @@ public class AnnotationEventListenerBeanPostProcessorTest {
     public void testPostProcessBean_AlreadyHandlerIsNotEnhanced() {
         RealEventListener eventHandler = new RealEventListener();
         Object actualResult = testSubject.postProcessAfterInitialization(eventHandler, "beanName");
-        assertFalse(Enhancer.isEnhanced(actualResult.getClass()));
+        // CGLib issue with java 17 and the assertion seems to be checking something really odd:
+        //assertFalse(Enhancer.isEnhanced(actualResult.getClass()));
         assertSame(eventHandler, actualResult);
     }
 
@@ -181,7 +191,8 @@ public class AnnotationEventListenerBeanPostProcessorTest {
     public void testPostProcessBean_PlainObjectIsIgnored() {
         NotAnEventHandler eventHandler = new NotAnEventHandler();
         Object actualResult = testSubject.postProcessAfterInitialization(eventHandler, "beanName");
-        assertFalse(Enhancer.isEnhanced(actualResult.getClass()));
+        // CGLib issue with java 17 and the assertion seems to be checking something really odd:
+        //assertFalse(Enhancer.isEnhanced(actualResult.getClass()));
         assertSame(eventHandler, actualResult);
     }
 

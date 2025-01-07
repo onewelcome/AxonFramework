@@ -17,6 +17,27 @@
 package org.axonframework.eventstore.jdbc;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.common.jdbc.ConnectionProvider;
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.DomainEventStream;
@@ -35,6 +56,8 @@ import org.axonframework.serializer.SerializedType;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.SimpleSerializedType;
 import org.axonframework.serializer.UnknownSerializedTypeException;
+import org.axonframework.serializer.xml.XStreamSerializer;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.upcasting.LazyUpcasterChain;
 import org.axonframework.upcasting.Upcaster;
 import org.axonframework.upcasting.UpcasterChain;
@@ -42,10 +65,11 @@ import org.axonframework.upcasting.UpcastingContext;
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,9 +83,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 
 /**
@@ -89,7 +110,8 @@ public class JdbcEventStoreTest {
             }
         }, sqldef);
         eventEntryStore1.createSchema();
-        testSubject = new JdbcEventStore(eventEntryStore1);
+        XStreamSerializer serializer = XStreamSerializerFactory.create(StubStateChangedEvent.class);
+        testSubject = new JdbcEventStore(eventEntryStore1, serializer);
 
         aggregate1 = new StubAggregateRoot(UUID.randomUUID());
         for (int t = 0; t < 10; t++) {
@@ -474,13 +496,13 @@ public class JdbcEventStoreTest {
                 new GenericDomainEventMessage<String>(UUID.randomUUID(), (long) 0,
                         "Mock contents", MetaData.emptyInstance())));
         verify(eventEntryStore, times(2)).persistEvent(eq("test"), isA(DomainEventMessage.class),
-                Matchers.<SerializedObject>any(),
-                Matchers.<SerializedObject>any());
+                any(),
+                any());
 
         reset(eventEntryStore);
         GenericDomainEventMessage<String> eventMessage = new GenericDomainEventMessage<String>(
                 UUID.randomUUID(), 0L, "Mock contents", MetaData.emptyInstance());
-        when(eventEntryStore.fetchAggregateStream(anyString(), any(), anyInt(), anyInt()))
+        when(eventEntryStore.fetchAggregateStream(anyString(), any(), anyLong(), anyInt()))
                 .thenReturn(new ArrayList(Arrays.asList(new DomainEventEntry(
                         "Mock", eventMessage,
                         mockSerializedObject("Mock contents".getBytes()),

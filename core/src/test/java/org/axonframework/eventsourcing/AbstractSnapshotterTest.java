@@ -16,8 +16,20 @@
 
 package org.axonframework.eventsourcing;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.common.DirectExecutor;
-import org.axonframework.common.ReflectionUtils;
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -26,17 +38,13 @@ import org.axonframework.domain.SimpleDomainEventStream;
 import org.axonframework.eventstore.SnapshotEventStore;
 import org.axonframework.repository.ConcurrencyException;
 import org.axonframework.unitofwork.TransactionManager;
-import org.hamcrest.Matcher;
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -66,14 +74,6 @@ public class AbstractSnapshotterTest {
         testSubject.setEventStore(mockEventStore);
         testSubject.setExecutor(DirectExecutor.INSTANCE);
         logger = mock(Logger.class);
-        originalLogger = replaceLogger(logger);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        if (originalLogger != null) {
-            replaceLogger(originalLogger);
-        }
     }
 
     @Test
@@ -147,22 +147,18 @@ public class AbstractSnapshotterTest {
 
         InOrder inOrder = inOrder(mockEventStore, txManager);
         inOrder.verify(txManager).startTransaction();
-        inOrder.verify(mockEventStore).readEvents(isA(String.class), anyObject());
+        inOrder.verify(mockEventStore).readEvents(isA(String.class), any());
         inOrder.verify(mockEventStore).appendSnapshotEvent(anyString(), isA(DomainEventMessage.class));
-        inOrder.verify(txManager).commitTransaction(anyObject());
+        inOrder.verify(txManager).commitTransaction(any());
     }
 
-    private Matcher<DomainEventMessage> event(final Object aggregateIdentifier, final long i) {
-        return new ArgumentMatcher<DomainEventMessage>() {
-            @Override
-            public boolean matches(Object argument) {
-                if (!(argument instanceof DomainEventMessage)) {
-                    return false;
-                }
-                DomainEventMessage event = (DomainEventMessage) argument;
-                return aggregateIdentifier.equals(event.getAggregateIdentifier())
-                        && event.getSequenceNumber() == i;
+    private ArgumentMatcher<DomainEventMessage> event(final Object aggregateIdentifier, final long i) {
+        return event -> {
+            if (event == null) {
+                return false;
             }
+            return aggregateIdentifier.equals(event.getAggregateIdentifier())
+                    && event.getSequenceNumber() == i;
         };
     }
 
@@ -172,17 +168,5 @@ public class AbstractSnapshotterTest {
             lastSequenceNumber = eventStream.next().getSequenceNumber();
         }
         return lastSequenceNumber;
-    }
-
-    private Logger replaceLogger(Logger mockLogger) throws NoSuchFieldException, IllegalAccessException {
-        Field loggerField = AbstractSnapshotter.class.getDeclaredField("logger");
-        ReflectionUtils.ensureAccessible(loggerField);
-
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-        Logger originalLogger = (Logger) loggerField.get(null);
-        loggerField.set(null, mockLogger);
-        return originalLogger;
     }
 }

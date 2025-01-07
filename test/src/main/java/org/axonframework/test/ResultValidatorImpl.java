@@ -16,6 +16,10 @@
 
 package org.axonframework.test;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.nullValue;
+
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.EventMessage;
@@ -27,8 +31,6 @@ import org.hamcrest.StringDescription;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-
-import static org.hamcrest.CoreMatchers.*;
 
 /**
  * Implementation of the ResultValidator. It also acts as a CommandCallback, and registers the actual result.
@@ -204,12 +206,9 @@ public class ResultValidatorImpl implements ResultValidator, CommandCallback<Obj
         if (!expectedEvent.getClass().equals(actualEvent.getClass())) {
             return false;
         }
-        EqualFieldsMatcher<Object> matcher = new EqualFieldsMatcher<Object>(expectedEvent, fieldFilter);
+        EqualFieldsMatcher<Object> matcher = new EqualFieldsMatcher<>(expectedEvent, fieldFilter);
         if (!matcher.matches(actualEvent)) {
-            reporter.reportDifferentEventContents(expectedEvent.getClass(),
-                                                  matcher.getFailedField(),
-                                                  matcher.getFailedFieldActualValue(),
-                                                  matcher.getFailedFieldExpectedValue());
+            throw new AxonAssertionError(matcher.getErrorMessage());
         }
         return true;
     }

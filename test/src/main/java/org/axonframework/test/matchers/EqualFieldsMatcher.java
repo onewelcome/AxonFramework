@@ -16,11 +16,19 @@
 
 package org.axonframework.test.matchers;
 
+import org.assertj.core.api.recursive.comparison.ComparisonDifference;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
+import org.assertj.core.api.recursive.comparison.RecursiveComparisonDifferenceCalculator;
+import org.assertj.core.error.ErrorMessageFactory;
+import org.assertj.core.error.ShouldBeEqualByComparingFieldByFieldRecursively;
+import org.assertj.core.presentation.StandardRepresentation;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Matcher that will match an Object if all the fields on that Object contain values equal to the same field in the
@@ -33,10 +41,9 @@ import java.util.Arrays;
 public class EqualFieldsMatcher<T> extends BaseMatcher<T> {
 
     private final T expected;
-    private final FieldFilter filter;
-    private Field failedField;
-    private Object failedFieldExpectedValue;
-    private Object failedFieldActualValue;
+    private final List<String> fieldsToIgnore = new ArrayList<>();
+    private String errorMessage;
+    private String failedField;
 
     /**
      * Initializes an EqualFieldsMatcher that will match an object with equal properties as the given
@@ -57,7 +64,7 @@ public class EqualFieldsMatcher<T> extends BaseMatcher<T> {
      */
     public EqualFieldsMatcher(T expected, FieldFilter filter) {
         this.expected = expected;
-        this.filter = filter;
+        populateIgnoredFieldsList(filter);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -66,83 +73,62 @@ public class EqualFieldsMatcher<T> extends BaseMatcher<T> {
         return expected.getClass().isInstance(item) && matchesSafely(item);
     }
 
-    private boolean matchesSafely(Object actual) {
-        return expected.getClass().equals(actual.getClass())
-                && fieldsMatch(expected.getClass(), expected, actual);
-    }
-
-    private boolean fieldsMatch(Class<?> aClass, Object expectedValue, Object actual) {
-        boolean match = true;
-        for (Field field : aClass.getDeclaredFields()) {
-            if (filter.accept(field)) {
-                field.setAccessible(true);
-                try {
-                    Object expectedFieldValue = field.get(expectedValue);
-                    Object actualFieldValue = field.get(actual);
-                    if (expectedFieldValue != null
-                            && actualFieldValue != null
-                            && expectedFieldValue.getClass().isArray()) {
-                        if (!Arrays.deepEquals(new Object[]{expectedFieldValue}, new Object[]{actualFieldValue})) {
-                            failedField = field;
-                            failedFieldExpectedValue = expectedFieldValue;
-                            failedFieldActualValue = actualFieldValue;
-                            return false;
-                        }
-                    } else if ((expectedFieldValue != null && !expectedFieldValue.equals(actualFieldValue))
-                            || (expectedFieldValue == null && actualFieldValue != null)) {
-                        failedField = field;
-                        failedFieldExpectedValue = expectedFieldValue;
-                        failedFieldActualValue = actualFieldValue;
-                        return false;
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new MatcherExecutionException("Could not confirm object equality due to an exception", e);
-                }
-            }
-        }
-        if (aClass.getSuperclass() != Object.class) {
-            match = fieldsMatch(aClass.getSuperclass(), expectedValue, actual);
-        }
-        return match;
-    }
-
-    /**
-     * Returns the field that failed comparison, if any. This value is only populated after {@link #matches(Object)} is
-     * called and a mismatch has been detected.
-     *
-     * @return the field that failed comparison, if any
-     */
-    public Field getFailedField() {
-        return failedField;
-    }
-
-    /**
-     * Returns the expected value of a failed field comparison, if any. This value is only populated after {@link
-     * #matches(Object)} is called and a mismatch has been detected.
-     *
-     * @return the expected value of the field that failed comparison, if any
-     */
-    public Object getFailedFieldExpectedValue() {
-        return failedFieldExpectedValue;
-    }
-
-    /**
-     * Returns the actual value of a failed field comparison, if any. This value is only populated after {@link
-     * #matches(Object)} is called and a mismatch has been detected.
-     *
-     * @return the actual value of the field that failed comparison, if any
-     */
-    public Object getFailedFieldActualValue() {
-        return failedFieldActualValue;
-    }
-
     @Override
     public void describeTo(Description description) {
         description.appendText(expected.getClass().getName());
-        if (failedField != null) {
-            description.appendText(" (failed on field '")
-                       .appendText(failedField.getName())
-                       .appendText("')");
+        if (errorMessage != null) {
+            description.appendText(errorMessage);
         }
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    private boolean matchesSafely(Object actual) {
+        var configuration = RecursiveComparisonConfiguration.builder()
+            .withStrictTypeChecking(true)
+            .withIgnoredFields(fieldsToIgnore.toArray(String[]::new))
+            .build();
+
+        RecursiveComparisonDifferenceCalculator calculator = new RecursiveComparisonDifferenceCalculator();
+        List<ComparisonDifference> comparisonDifferences = calculator.determineDifferences(actual, expected, configuration);
+
+        if (comparisonDifferences.isEmpty()) {
+            return true; // No differences found
+        }
+
+        ErrorMessageFactory errorMessageFactory =
+            ShouldBeEqualByComparingFieldByFieldRecursively.shouldBeEqualByComparingFieldByFieldRecursively(
+                actual,
+                expected,
+                comparisonDifferences,
+                configuration,
+                new StandardRepresentation()
+            );
+        errorMessage = errorMessageFactory.create();
+        failedField = comparisonDifferences.get(0)
+            .getDecomposedPath()
+            .stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining());
+        return false;
+    }
+
+    private void populateIgnoredFieldsList(FieldFilter currentFilter) {
+        if (currentFilter instanceof IgnoreField ignoreFieldFilter) {
+            fieldsToIgnore.add(ignoreFieldFilter.getField());
+        } else if (currentFilter instanceof NonTransientFieldsFilter) {
+            List<String> transientFieldsToIgnore = TransientFieldsUtil.getTransientFields(expected);
+            fieldsToIgnore.addAll(transientFieldsToIgnore);
+        } else if (currentFilter instanceof MatchAllFieldFilter matchAllFieldFilter) {
+            for (FieldFilter fieldSubFilter : matchAllFieldFilter.getFilters()) {
+                populateIgnoredFieldsList(fieldSubFilter);
+            }
+        }
+    }
+
+    public String getFailedField() {
+        return failedField;
     }
 }

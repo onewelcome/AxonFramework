@@ -1,5 +1,14 @@
 package org.axonframework.commandhandling.disruptor;
 
+import static org.hamcrest.CoreMatchers.isA;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.CommandHandlerInterceptor;
 import org.axonframework.commandhandling.CommandMessage;
@@ -20,11 +29,6 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Collections;
 import java.util.concurrent.Executor;
-
-import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Rene de Waele

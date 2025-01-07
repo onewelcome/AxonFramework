@@ -16,6 +16,12 @@
 
 package org.axonframework.mongo3.saga.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.mongodb.Mongo;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -29,8 +35,13 @@ import org.axonframework.saga.annotation.AbstractAnnotatedSaga;
 import org.axonframework.serializer.JavaSerializer;
 import org.axonframework.serializer.xml.XStreamSerializer;
 import org.bson.conversions.Bson;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +55,12 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Jettro Coenradie
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "/META-INF/spring/mongo-context.xml")
+@Ignore("We're not using Mongo as a data store in any of our Axon-based projects")
 public class MongoSagaRepositoryTest {
 
     private final static Logger logger = LoggerFactory.getLogger(MongoSagaRepositoryTest.class);

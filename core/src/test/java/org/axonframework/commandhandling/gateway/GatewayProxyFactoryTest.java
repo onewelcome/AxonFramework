@@ -16,6 +16,24 @@
 
 package org.axonframework.commandhandling.gateway;
 
+import static java.util.Collections.singletonMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandExecutionException;
@@ -24,21 +42,17 @@ import org.axonframework.common.annotation.MetaData;
 import org.axonframework.common.lock.DeadlockException;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static java.util.Collections.singletonMap;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -75,16 +89,16 @@ public class GatewayProxyFactoryTest {
     public void testGateway_FireAndForget() {
         final Object metaTest = new Object();
         gateway.fireAndForget("Command", null, metaTest, "value");
-        verify(mockCommandBus).dispatch(argThat(new TypeSafeMatcher<CommandMessage<?>>() {
+        verify(mockCommandBus).dispatch(argThat(new ArgumentMatcher<CommandMessage<?>>() {
             @Override
-            public boolean matchesSafely(CommandMessage<?> item) {
+            public boolean matches(CommandMessage<?> item) {
                 return item.getMetaData().get("test") == metaTest
                         && "value".equals(item.getMetaData().get("key"));
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("A command with 2 meta data entries");
+            public String toString() {
+                return "A command with 2 meta data entries";
             }
         }), isA(RetryingCallback.class));
     }
@@ -97,17 +111,17 @@ public class GatewayProxyFactoryTest {
         gateway.fireAndForget("Command", org.axonframework.domain.MetaData.from(singletonMap("otherKey", "otherVal")),
                               metaTest, "value");
         // in this case, no callback is used
-        verify(mockCommandBus).dispatch(argThat(new TypeSafeMatcher<CommandMessage<?>>() {
+        verify(mockCommandBus).dispatch(argThat(new ArgumentMatcher<CommandMessage<?>>() {
             @Override
-            public boolean matchesSafely(CommandMessage<?> item) {
+            public boolean matches(CommandMessage<?> item) {
                 return item.getMetaData().get("test") == metaTest
                         && "otherVal".equals(item.getMetaData().get("otherKey"))
                         && "value".equals(item.getMetaData().get("key"));
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("A command with 2 meta data entries");
+            public String toString() {
+                return "A command with 2 meta data entries";
             }
         }));
     }
@@ -508,7 +522,7 @@ public class GatewayProxyFactoryTest {
 
         verify(callback1).onSuccess(42);
         verify(callback2).onSuccess(42);
-        verify(callback, never()).onSuccess(anyObject());
+        verify(callback, never()).onSuccess(any());
     }
 
     @Test(timeout = 2000)

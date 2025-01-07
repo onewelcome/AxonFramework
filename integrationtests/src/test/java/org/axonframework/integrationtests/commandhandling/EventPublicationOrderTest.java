@@ -16,6 +16,15 @@
 
 package org.axonframework.integrationtests.commandhandling;
 
+import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.SimpleCommandBus;
 import org.axonframework.commandhandling.annotation.AnnotationCommandHandlerAdapter;
@@ -27,16 +36,13 @@ import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.SimpleEventBus;
 import org.axonframework.eventsourcing.EventSourcingRepository;
 import org.axonframework.eventstore.EventStore;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.UUID;
-
-import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -81,16 +87,16 @@ public class EventPublicationOrderTest {
                                  isA(DomainEventMessage.class));
     }
 
-    private static class NotADomainEventMatcher extends BaseMatcher<EventMessage> {
+    private static class NotADomainEventMatcher implements ArgumentMatcher<EventMessage<?>> {
 
         @Override
-        public boolean matches(Object o) {
+        public boolean matches(EventMessage<?> o) {
             return !(o instanceof DomainEventMessage);
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("Not a DomainEventMessage");
+        public String toString() {
+            return "Not a DomainEventMessage";
         }
     }
 }

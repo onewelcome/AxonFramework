@@ -16,10 +16,6 @@
 
 package org.axonframework.test.matchers;
 
-import org.axonframework.common.ReflectionUtils;
-
-import java.lang.reflect.Field;
-
 /**
  * FieldFilter implementation that only accepts non-transient Fields.
  *
@@ -31,8 +27,8 @@ public class NonTransientFieldsFilter implements FieldFilter {
     private static final NonTransientFieldsFilter INSTANCE = new NonTransientFieldsFilter();
 
     @Override
-    public boolean accept(Field field) {
-        return !ReflectionUtils.isTransient(field);
+    public boolean accept(String field) {
+        return false;
     }
 
     private NonTransientFieldsFilter() {

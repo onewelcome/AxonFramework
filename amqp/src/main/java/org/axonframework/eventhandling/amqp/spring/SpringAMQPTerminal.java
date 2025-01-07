@@ -16,6 +16,8 @@
 
 package org.axonframework.eventhandling.amqp.spring;
 
+import static org.axonframework.eventhandling.amqp.AMQPConsumerConfiguration.AMQP_CONFIG_PROPERTY;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ShutdownSignalException;
 import org.axonframework.common.Assert;
@@ -48,8 +50,6 @@ import org.springframework.context.ApplicationContextAware;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-
-import static org.axonframework.eventhandling.amqp.AMQPConsumerConfiguration.AMQP_CONFIG_PROPERTY;
 
 /**
  * EventBusTerminal implementation that uses an AMQP 0.9 compatible Message Broker to dispatch event messages. All
@@ -115,7 +115,7 @@ public class SpringAMQPTerminal implements EventBusTerminal, InitializingBean, A
     private void tryClose(Channel channel) {
         try {
             channel.close();
-        } catch (IOException e) {
+        } catch (IOException | TimeoutException e) {
             logger.info("Unable to close channel. It might already be closed.", e);
         }
     }

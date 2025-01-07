@@ -1,23 +1,32 @@
 package org.axonframework.saga.repository.jdbc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.domain.EventMessage;
 import org.axonframework.saga.AssociationValue;
 import org.axonframework.saga.AssociationValues;
 import org.axonframework.saga.Saga;
 import org.axonframework.saga.annotation.AbstractAnnotatedSaga;
 import org.axonframework.saga.repository.StubSaga;
+import org.axonframework.testutils.XStreamSerializerFactory;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
 import org.hsqldb.jdbc.JDBCDataSource;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Kristian Rosenvold
@@ -37,6 +46,7 @@ public class JdbcSagaRepositoryTest {
 
         connection = dataSource.getConnection();
         repository = new JdbcSagaRepository(dataSource, new HsqlSagaSqlSchema());
+        repository.setSerializer(XStreamSerializerFactory.create(StubSaga.class, AssociationValue.class));
         repository.createSchema();
 
         reset(dataSource);

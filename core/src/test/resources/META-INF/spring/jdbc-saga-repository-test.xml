@@ -29,6 +29,8 @@
 
     <axon:event-bus id="eventBus" />
 
-    <axon:jdbc-saga-repository id="sagaRepository" data-source="dataSource"/>
+    <axon:jdbc-saga-repository id="sagaRepository" data-source="dataSource" saga-serializer="serializer"/>
 
+    <!-- Serializer with proper security configuration -->
+    <bean class="org.axonframework.testutils.XStreamSerializerSpringConfiguration"/>
 </beans>

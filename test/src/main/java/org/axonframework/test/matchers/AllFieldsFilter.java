@@ -16,8 +16,6 @@
 
 package org.axonframework.test.matchers;
 
-import java.lang.reflect.Field;
-
 /**
  * FieldFilter implementation that accepts all Fields.
  *
@@ -29,7 +27,7 @@ public class AllFieldsFilter implements FieldFilter {
     private static final AllFieldsFilter INSTANCE = new AllFieldsFilter();
 
     @Override
-    public boolean accept(Field field) {
+    public boolean accept(String field) {
         return true;
     }
 

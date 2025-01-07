@@ -16,12 +16,19 @@
 
 package org.axonframework.integrationtests.eventhandling.amqp;
 
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
+
 import org.aopalliance.aop.Advice;
 import org.axonframework.eventhandling.amqp.spring.DefaultRabbitMqStrategy;
 import org.axonframework.eventhandling.amqp.spring.ListenerContainerFactory;
 import org.axonframework.eventhandling.amqp.spring.SpringAMQPConsumerConfiguration;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -35,10 +42,6 @@ import org.springframework.util.ErrorHandler;
 
 import java.util.concurrent.Executor;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
-
 /**
  * Test that validates compatibility of the ListerContainerFactory with Spring Rabbit 1.3.x.
  *
@@ -46,6 +49,7 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SimpleMessageListenerContainer.class, DefaultRabbitMqStrategy.class})
+@Ignore("We're not using Rabbit in any of our Axon-based components yet.")
 public class ListenerContainerFactoryTest {
 
     private SimpleMessageListenerContainer mockContainer;

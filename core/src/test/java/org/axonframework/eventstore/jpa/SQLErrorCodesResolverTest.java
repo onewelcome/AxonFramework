@@ -16,20 +16,21 @@
 
 package org.axonframework.eventstore.jpa;
 
-import org.axonframework.common.AxonConfigurationException;
-import org.junit.*;
-import org.mockito.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import org.axonframework.common.AxonConfigurationException;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import javax.sql.DataSource;
+import jakarta.persistence.PersistenceException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import javax.persistence.PersistenceException;
-import javax.sql.DataSource;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Martin Tilma

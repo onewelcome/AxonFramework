@@ -16,17 +16,31 @@
 
 package org.axonframework.commandhandling.gateway;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandDispatchInterceptor;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.correlation.CorrelationDataHolder;
-import org.hamcrest.CustomTypeSafeMatcher;
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,9 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -243,10 +254,15 @@ public class DefaultCommandGatewayTest {
         CorrelationDataHolder.setCorrelationData(Collections.singletonMap("correlationId", "test"));
         testSubject.send("Hello");
 
-        verify(mockCommandBus).dispatch(argThat(new CustomTypeSafeMatcher<CommandMessage<?>>("header correlationId") {
+        verify(mockCommandBus).dispatch(argThat(new ArgumentMatcher<>() {
             @Override
-            protected boolean matchesSafely(CommandMessage<?> item) {
+            public boolean matches(CommandMessage<?> item) {
                 return "test".equals(item.getMetaData().get("correlationId"));
+            }
+
+            @Override
+            public String toString(){
+                return "header correlationId";
             }
         }), isA(CommandCallback.class));
     }
@@ -260,12 +276,16 @@ public class DefaultCommandGatewayTest {
         CorrelationDataHolder.setCorrelationData(data);
         testSubject.send(new GenericCommandMessage<String>("Hello", Collections.singletonMap("header", "value")));
 
-        verify(mockCommandBus).dispatch(argThat(new CustomTypeSafeMatcher<CommandMessage<?>>(
-                "header 'correlationId' and 'header'") {
+        verify(mockCommandBus).dispatch(argThat(new ArgumentMatcher<>() {
             @Override
-            protected boolean matchesSafely(CommandMessage<?> item) {
+            public boolean matches(CommandMessage<?> item) {
                 return "test".equals(item.getMetaData().get("correlationId"))
                         && "value".equals(item.getMetaData().get("header"));
+            }
+
+            @Override
+            public String toString(){
+                return "header 'correlationId' and 'header'";
             }
         }), isA(CommandCallback.class));
     }

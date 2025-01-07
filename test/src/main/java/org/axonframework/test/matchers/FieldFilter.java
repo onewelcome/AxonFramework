@@ -16,8 +16,6 @@
 
 package org.axonframework.test.matchers;
 
-import java.lang.reflect.Field;
-
 /**
  * The FieldFilter indicates whether any given Field should be accepted for processing or not.
  *
@@ -32,5 +30,9 @@ public interface FieldFilter {
      * @param field The field to evaluate
      * @return <code>true</code> when the field should be processed, otherwise <code>false</code>
      */
-    boolean accept(Field field);
+    boolean accept(String field);
+
+    default String getField() {
+      return null;
+    }
 }

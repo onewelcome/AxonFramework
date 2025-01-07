@@ -16,6 +16,11 @@
 
 package org.axonframework.eventsourcing.annotation;
 
+import static java.lang.String.format;
+import static org.axonframework.common.CollectionUtils.filterByType;
+import static org.axonframework.common.ReflectionUtils.ensureAccessible;
+import static org.axonframework.common.ReflectionUtils.fieldsOf;
+
 import org.axonframework.common.ReflectionUtils;
 import org.axonframework.common.annotation.HandlerDefinition;
 import org.axonframework.common.annotation.MessageHandlerInvoker;
@@ -33,11 +38,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.lang.String.format;
-import static org.axonframework.common.CollectionUtils.filterByType;
-import static org.axonframework.common.ReflectionUtils.ensureAccessible;
-import static org.axonframework.common.ReflectionUtils.fieldsOf;
 
 /**
  * Inspects objects to find aggregate specific annotations, such as {@link AggregateIdentifier} and {@link
@@ -177,7 +177,7 @@ public final class AggregateAnnotationInspector {
         for (Annotation annotation : annotations) {
             if (annotation instanceof AggregateIdentifier) {
                 return true;
-            } else if (annotation.toString().startsWith("@javax.persistence.Id(")) {
+            } else if (annotation.toString().startsWith("@jakarta.persistence.Id(")) {
                 // this way, the JPA annotations don't need to be on the classpath
                 return true;
             }

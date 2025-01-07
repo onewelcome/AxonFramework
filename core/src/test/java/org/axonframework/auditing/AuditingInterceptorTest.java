@@ -16,6 +16,18 @@
 
 package org.axonframework.auditing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.commandhandling.InterceptorChain;
@@ -28,15 +40,13 @@ import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.SaveAggregateCallback;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.junit.internal.matchers.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.util.Collections;
 import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -120,15 +130,15 @@ public class AuditingInterceptorTest {
     }
 
     private List<EventMessage> listWithTwoEventMessages() {
-        return argThat(new TypeSafeMatcher<List<EventMessage>>() {
+        return argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matchesSafely(List<EventMessage> item) {
+            public boolean matches(List<EventMessage> item) {
                 return item != null && item.size() == 2;
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("A List with two EventMessages");
+            public String toString() {
+                return "A List with two EventMessages";
             }
         });
     }

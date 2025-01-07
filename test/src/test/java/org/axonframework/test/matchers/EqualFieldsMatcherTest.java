@@ -16,14 +16,13 @@
 
 package org.axonframework.test.matchers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.axonframework.test.MyEvent;
 import org.axonframework.test.MyOtherEvent;
 import org.hamcrest.StringDescription;
-import org.junit.*;
-
-import java.lang.reflect.Field;
-
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Allard Buijze
@@ -42,40 +41,35 @@ public class EqualFieldsMatcherTest {
 
     @Test
     public void testMatches_SameInstance() {
-        assertTrue(testSubject.matches(expectedEvent));
+        assertThat(testSubject.matches(expectedEvent)).isTrue();
     }
 
     @Test
     public void testMatches_EqualInstance() {
-        assertTrue(testSubject.matches(new MyEvent(aggregateId, 1)));
+        assertThat(testSubject.matches(new MyEvent(aggregateId, 1))).isTrue();
     }
 
     @Test
     public void testMatches_WrongEventType() {
-        assertFalse(testSubject.matches(new MyOtherEvent()));
+        assertThat(testSubject.matches(new MyOtherEvent())).isFalse();
     }
 
     @Test
     public void testMatches_WrongFieldValue() {
-        assertFalse(testSubject.matches(new MyEvent(aggregateId, 2)));
-        assertEquals("someValue", testSubject.getFailedField().getName());
+        assertThat(testSubject.matches(new MyEvent(aggregateId, 2))).isFalse();
+        assertThat(testSubject.getFailedField()).isEqualTo("someValue");
     }
 
     @Test
     public void testMatches_WrongFieldValueInIgnoredField() {
-        testSubject = Matchers.equalTo(expectedEvent, new FieldFilter() {
-            @Override
-            public boolean accept(Field field) {
-                return !field.getName().equals("someValue");
-            }
-        });
-        assertTrue(testSubject.matches(new MyEvent(aggregateId, 2)));
+        testSubject = Matchers.equalTo(expectedEvent, new IgnoreField(MyEvent.class, "someValue"));
+        assertThat(testSubject.matches(new MyEvent(aggregateId, 2))).isTrue();
     }
 
     @Test
     public void testMatches_WrongFieldValueInArray() {
-        assertFalse(testSubject.matches(new MyEvent(aggregateId, 1, new byte[]{1, 2})));
-        assertEquals("someBytes", testSubject.getFailedField().getName());
+        assertThat(testSubject.matches(new MyEvent(aggregateId, 1, new byte[]{1, 2}))).isFalse();
+        assertThat(testSubject.getFailedField()).isEqualTo("someBytes");
     }
 
     @Test
@@ -83,7 +77,7 @@ public class EqualFieldsMatcherTest {
         testSubject.matches(expectedEvent);
         StringDescription description = new StringDescription();
         testSubject.describeTo(description);
-        assertEquals("org.axonframework.test.MyEvent", description.toString());
+        assertThat(description).hasToString("org.axonframework.test.MyEvent");
     }
 
     @Test
@@ -91,7 +85,7 @@ public class EqualFieldsMatcherTest {
         testSubject.matches(new MyOtherEvent());
         StringDescription description = new StringDescription();
         testSubject.describeTo(description);
-        assertEquals("org.axonframework.test.MyEvent", description.toString());
+        assertThat(description).hasToString("org.axonframework.test.MyEvent");
     }
 
     @Test
@@ -99,6 +93,8 @@ public class EqualFieldsMatcherTest {
         testSubject.matches(new MyEvent(aggregateId, 2));
         StringDescription description = new StringDescription();
         testSubject.describeTo(description);
-        assertEquals("org.axonframework.test.MyEvent (failed on field 'someValue')", description.toString());
+        assertThat(description.toString())
+            .contains("field/property 'someValue' differ")
+            .contains("- actual value  : 2\n- expected value: 1");
     }
 }

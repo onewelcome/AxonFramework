@@ -16,24 +16,34 @@
 
 package org.axonframework.eventhandling.amqp.spring;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.common.AxonConfigurationException;
 import org.axonframework.eventhandling.SimpleCluster;
 import org.axonframework.eventhandling.amqp.DefaultAMQPConsumerConfiguration;
 import org.axonframework.eventhandling.amqp.DefaultAMQPMessageConverter;
 import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.xml.XStreamSerializer;
-import org.junit.*;
-import org.mockito.internal.util.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.internal.util.MockUtil;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -181,7 +191,7 @@ public class ListenerContainerLifecycleManagerTest {
 
         @Override
         public Object answer(InvocationOnMock invocation) throws Throwable {
-            if (new MockUtil().isMock(invocation.getArguments()[0])) {
+            if (MockUtil.isMock(invocation.getArguments()[0])) {
                 return invocation.callRealMethod();
             }
             return invocation.getMethod().invoke(container, spy(invocation.getArguments()[0]));

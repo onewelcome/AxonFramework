@@ -16,20 +16,26 @@
 
 package org.axonframework.eventhandling;
 
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import org.axonframework.correlation.CorrelationDataHolder;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -64,17 +70,17 @@ public class EventTemplateTest {
 
         testSubject.publishEvent(payload);
 
-        verifyZeroInteractions(mockEventBus);
-        verify(mockUnitOfWork).publishEvent(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verifyNoInteractions(mockEventBus);
+        verify(mockUnitOfWork).publishEvent(argThat(new ArgumentMatcher<>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "value1".equals(eventMessage.getMetaData().get("key1"))
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'key1' meta data property");
+            public String toString() {
+                return "an event message with a 'key1' meta data property";
             }
         }), eq(mockEventBus));
     }
@@ -84,17 +90,17 @@ public class EventTemplateTest {
         CorrelationDataHolder.setCorrelationData(Collections.singletonMap("correlationId", "testing"));
         testSubject.publishEvent(payload, Collections.singletonMap("scope", "test"));
 
-        verify(mockEventBus).publish(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verify(mockEventBus).publish(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "testing".equals(eventMessage.getMetaData().get("correlationId"))
                         && eventMessage.getMetaData().containsKey("scope")
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'correlationId' and 'scope' meta data property");
+            public String toString() {
+                return "an event message with a 'correlationId' and 'scope' meta data property";
             }
         }));
         verifyNoMoreInteractions(mockUnitOfWork, mockEventBus);
@@ -105,17 +111,16 @@ public class EventTemplateTest {
         CorrelationDataHolder.setCorrelationData(Collections.singletonMap("correlationId", "testing"));
         testSubject.publishEvent(payload, Collections.singletonMap("correlationId", "overridden"));
 
-        verify(mockEventBus).publish(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verify(mockEventBus).publish(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "overridden".equals(eventMessage.getMetaData().get("correlationId"))
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText(
-                        "an event message with a meta data property 'correlationId' of value 'overridden'");
+            public String toString() {
+                return "an event message with a meta data property 'correlationId' of value 'overridden'";
             }
         }));
         verifyNoMoreInteractions(mockUnitOfWork, mockEventBus);
@@ -128,17 +133,16 @@ public class EventTemplateTest {
                                                     .withMetaData(Collections.singletonMap("correlationId",
                                                                                            "overridden")));
 
-        verify(mockEventBus).publish(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verify(mockEventBus).publish(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "overridden".equals(eventMessage.getMetaData().get("correlationId"))
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText(
-                        "an event message with a meta data property 'correlationId' of value 'overridden'");
+            public String toString() {
+                return "an event message with a meta data property 'correlationId' of value 'overridden'";
             }
         }));
         verifyNoMoreInteractions(mockUnitOfWork, mockEventBus);
@@ -153,18 +157,18 @@ public class EventTemplateTest {
         moreMetaData.put("key2", "value1");
         testSubject.publishEvent(payload, moreMetaData);
 
-        verifyZeroInteractions(mockEventBus);
-        verify(mockUnitOfWork).publishEvent(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verifyNoInteractions(mockEventBus);
+        verify(mockUnitOfWork).publishEvent(argThat(new ArgumentMatcher<>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "value2".equals(eventMessage.getMetaData().get("key1"))
                         && eventMessage.getMetaData().containsKey("key2")
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'key1' and 'key2' meta data property");
+            public String toString() {
+                return "an event message with a 'key1' and 'key2' meta data property";
             }
         }), eq(mockEventBus));
     }
@@ -177,18 +181,18 @@ public class EventTemplateTest {
         moreMetaData.put("key2", "value1");
         testSubject.publishEvent(payload, moreMetaData);
 
-        verifyZeroInteractions(mockUnitOfWork);
-        verify(mockEventBus).publish(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verifyNoInteractions(mockUnitOfWork);
+        verify(mockEventBus).publish(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "value2".equals(eventMessage.getMetaData().get("key1"))
                         && eventMessage.getMetaData().containsKey("key2")
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'key1' and 'key2' meta data property");
+            public String toString() {
+                return "an event message with a 'key1' and 'key2' meta data property";
             }
         }));
     }
@@ -197,17 +201,17 @@ public class EventTemplateTest {
     public void testEventSentImmediatelyWhenNoActiveUnitOfWorkExists() throws Exception {
         testSubject.publishEvent(payload);
 
-        verifyZeroInteractions(mockUnitOfWork);
-        verify(mockEventBus).publish(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verifyNoInteractions(mockUnitOfWork);
+        verify(mockEventBus).publish(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return "value1".equals(eventMessage.getMetaData().get("key1"))
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'key1' meta data property");
+            public String toString() {
+                return "an event message with a 'key1' meta data property";
             }
         }));
     }
@@ -217,17 +221,17 @@ public class EventTemplateTest {
         testSubject = new EventTemplate(mockEventBus);
         testSubject.publishEvent(payload);
 
-        verifyZeroInteractions(mockUnitOfWork);
-        verify(mockEventBus).publish(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verifyNoInteractions(mockUnitOfWork);
+        verify(mockEventBus).publish(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return eventMessage.getMetaData().isEmpty()
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'key1' meta data property");
+            public String toString() {
+                return "an event message with a 'key1' meta data property";
             }
         }));
     }
@@ -239,17 +243,17 @@ public class EventTemplateTest {
         testSubject = new EventTemplate(mockEventBus);
         testSubject.publishEvent(payload);
 
-        verifyZeroInteractions(mockEventBus);
-        verify(mockUnitOfWork).publishEvent(argThat(new TypeSafeMatcher<EventMessage<?>>() {
+        verifyNoInteractions(mockEventBus);
+        verify(mockUnitOfWork).publishEvent(argThat(new ArgumentMatcher<>() {
             @Override
-            protected boolean matchesSafely(EventMessage<?> eventMessage) {
+            public boolean matches(EventMessage<?> eventMessage) {
                 return eventMessage.getMetaData().isEmpty()
                         && eventMessage.getPayload().equals(payload);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("an event message with a 'key1' meta data property");
+            public String toString() {
+                return "an event message with a 'key1' meta data property";
             }
         }), eq(mockEventBus));
     }

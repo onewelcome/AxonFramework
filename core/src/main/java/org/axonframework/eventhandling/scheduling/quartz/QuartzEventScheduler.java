@@ -16,6 +16,8 @@
 
 package org.axonframework.eventhandling.scheduling.quartz;
 
+import static org.quartz.JobKey.jobKey;
+
 import org.axonframework.common.Assert;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
@@ -38,9 +40,7 @@ import org.quartz.TriggerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-
-import static org.quartz.JobKey.jobKey;
+import jakarta.annotation.PostConstruct;
 
 /**
  * EventScheduler implementation that delegates scheduling and triggering to a Quartz Scheduler.

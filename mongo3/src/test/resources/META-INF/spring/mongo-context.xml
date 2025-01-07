@@ -20,8 +20,12 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
+    <!-- Serializer with proper security configuration -->
+    <bean class="org.axonframework.mongo3.SpringConfiguration"/>
+
     <!-- Axon Event store -->
     <bean id="eventStore" class="org.axonframework.mongo3.eventstore.MongoEventStore" lazy-init="true">
+        <constructor-arg ref="serializer"/>
         <constructor-arg ref="template"/>
     </bean>
 

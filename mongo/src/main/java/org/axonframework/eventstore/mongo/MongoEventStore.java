@@ -39,12 +39,12 @@ import org.axonframework.upcasting.UpcasterChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.annotation.PostConstruct;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.PostConstruct;
 
 /**
  * <p>Implementation of the <code>EventStore</code> based on a MongoDB instance or replica set. Sharding and pairing

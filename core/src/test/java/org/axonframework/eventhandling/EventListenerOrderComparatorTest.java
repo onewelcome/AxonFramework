@@ -1,12 +1,16 @@
 package org.axonframework.eventhandling;
 
-import org.axonframework.domain.EventMessage;
-import org.junit.*;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import org.axonframework.domain.EventMessage;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.core.Ordered;
 
 /**
  * @author Allard Buijze
@@ -28,7 +32,7 @@ public class EventListenerOrderComparatorTest {
         EventListener listener1 = mock(EventListener.class);
         assertEquals(0, testSubject.compare(listener1, listener1));
 
-        verifyZeroInteractions(orderResolver);
+        verifyNoInteractions(orderResolver);
     }
 
     @Test
@@ -37,7 +41,7 @@ public class EventListenerOrderComparatorTest {
         EventListener listener2 = new StubEventListener(true, 1);
         assertEquals(0, testSubject.compare(listener1, listener2));
 
-        verifyZeroInteractions(orderResolver);
+        verifyNoInteractions(orderResolver);
     }
 
     @Test

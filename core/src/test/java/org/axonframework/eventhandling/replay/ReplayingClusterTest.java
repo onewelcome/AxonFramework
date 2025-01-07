@@ -16,6 +16,26 @@
 
 package org.axonframework.eventhandling.replay;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.refEq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.GenericDomainEventMessage;
 import org.axonframework.domain.GenericEventMessage;
@@ -33,19 +53,17 @@ import org.axonframework.eventstore.management.Criteria;
 import org.axonframework.eventstore.management.EventStoreManagement;
 import org.axonframework.testutils.MockException;
 import org.axonframework.unitofwork.TransactionManager;
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -140,7 +158,7 @@ public class ReplayingClusterTest {
             inOrder.verify(mockMessageHandler).releaseMessage(eq(delegateCluster), isA(DomainEventMessage.class));
         }
         inOrder.verify(mockMessageHandler).processBacklog(delegateCluster);
-        inOrder.verify(mockTransactionManager).commitTransaction(anyObject());
+        inOrder.verify(mockTransactionManager).commitTransaction(any());
     }
 
     @Test
@@ -182,7 +200,7 @@ public class ReplayingClusterTest {
             inOrder.verify(mockMessageHandler).releaseMessage(eq(delegateCluster), isA(DomainEventMessage.class));
         }
         inOrder.verify(mockMessageHandler).processBacklog(delegateCluster);
-        inOrder.verify(mockTransactionManager).commitTransaction(anyObject());
+        inOrder.verify(mockTransactionManager).commitTransaction(any());
     }
 
     @Test
@@ -218,7 +236,7 @@ public class ReplayingClusterTest {
             inOrder.verify(mockMessageHandler).releaseMessage(eq(delegateCluster), isA(DomainEventMessage.class));
         }
         inOrder.verify(mockMessageHandler).onReplayFailed(delegateCluster, toBeThrown);
-        inOrder.verify(mockTransactionManager).rollbackTransaction(anyObject());
+        inOrder.verify(mockTransactionManager).rollbackTransaction(any());
 
         verify(mockMessageHandler, never()).processBacklog(delegateCluster);
         assertFalse(testSubject.isInReplayMode());
@@ -258,7 +276,7 @@ public class ReplayingClusterTest {
         }
         inOrder.verify(listener).afterReplay();
         inOrder.verify(mockMessageHandler).processBacklog(delegateCluster);
-        inOrder.verify(mockTransactionManager).commitTransaction(anyObject());
+        inOrder.verify(mockTransactionManager).commitTransaction(any());
 
         verify(delegateCluster, never()).publish(concurrentMessage);
         verify(delegateCluster).subscribe(listener);
@@ -367,7 +385,7 @@ public class ReplayingClusterTest {
             inOrder.verify(delegateCluster).publish(isA(DomainEventMessage.class));
             inOrder.verify(mockMessageHandler).releaseMessage(eq(delegateCluster), isA(DomainEventMessage.class));
         }
-        inOrder.verify(mockTransactionManager).commitTransaction(anyObject());
+        inOrder.verify(mockTransactionManager).commitTransaction(any());
         inOrder.verify(mockTransactionManager).startTransaction();
 
         for (int i = 5; i < 10; i++) {
@@ -375,7 +393,7 @@ public class ReplayingClusterTest {
             inOrder.verify(mockMessageHandler).releaseMessage(eq(delegateCluster), isA(DomainEventMessage.class));
         }
         inOrder.verify(mockMessageHandler).processBacklog(delegateCluster);
-        inOrder.verify(mockTransactionManager).commitTransaction(anyObject());
+        inOrder.verify(mockTransactionManager).commitTransaction(any());
         inOrder.verify(mockTransactionManager, never()).startTransaction();
     }
 

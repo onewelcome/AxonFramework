@@ -32,6 +32,7 @@ import org.axonframework.test.FixtureResourceParameterResolverFactory;
 import org.axonframework.test.eventscheduler.StubEventScheduler;
 import org.axonframework.test.matchers.FieldFilter;
 import org.axonframework.test.matchers.IgnoreField;
+import org.axonframework.test.matchers.MatchAllFieldFilter;
 import org.axonframework.test.utils.AutowiredResourceInjector;
 import org.axonframework.test.utils.CallbackBehavior;
 import org.axonframework.test.utils.RecordingCommandBus;
@@ -39,9 +40,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.Duration;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -347,12 +346,14 @@ public class AnnotatedSagaTestFixture implements FixtureConfiguration, Continued
         }
     }
 
-    private class MutableFieldFilter implements FieldFilter {
+    private static class MutableFieldFilter extends MatchAllFieldFilter {
 
-        private final List<FieldFilter> filters = new ArrayList<FieldFilter>();
+        public MutableFieldFilter() {
+            super(List.of());
+        }
 
         @Override
-        public boolean accept(Field field) {
+        public boolean accept(String field) {
             for (FieldFilter filter : filters) {
                 if (!filter.accept(field)) {
                     return false;

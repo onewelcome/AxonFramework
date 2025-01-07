@@ -16,6 +16,13 @@
 
 package org.axonframework.integrationtests;
 
+import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.log4j.PropertyConfigurator;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.callbacks.VoidCallback;
@@ -34,15 +41,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.Log4jConfigurer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -82,7 +89,7 @@ public class ConcurrentModificationTest_OptimisticLocking implements Thread.Unca
      */
     @Test(timeout = 60000)
     public void testConcurrentModifications() throws Exception {
-        Log4jConfigurer.initLogging("classpath:log4j_silenced.properties");
+        PropertyConfigurator.configure(getClass().getClassLoader().getResource("log4j_silenced.properties"));
         assertFalse("Something is wrong", CurrentUnitOfWork.isStarted());
         final UUID aggregateId = UUID.randomUUID();
         commandBus.dispatch(asCommandMessage(new CreateStubAggregateCommand(aggregateId)));

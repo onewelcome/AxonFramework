@@ -16,6 +16,13 @@
 
 package org.axonframework.integrationtests.commandhandling;
 
+import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.auditing.AuditDataProvider;
 import org.axonframework.auditing.AuditingInterceptor;
 import org.axonframework.commandhandling.CommandHandler;
@@ -30,16 +37,14 @@ import org.axonframework.eventsourcing.EventSourcingRepository;
 import org.axonframework.eventstore.EventStore;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.junit.internal.matchers.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-
-import static org.axonframework.commandhandling.GenericCommandMessage.asCommandMessage;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -97,29 +102,29 @@ public class AuditingInterceptorIntegrationTest {
 
         commandBus.dispatch(asCommandMessage("command"));
 
-        verify(eventStore).appendEvents(eq("StubAggregate"), argThat(new TypeSafeMatcher<DomainEventStream>() {
+        verify(eventStore).appendEvents(eq("StubAggregate"), argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matchesSafely(DomainEventStream item) {
+            public boolean matches(DomainEventStream item) {
                 DomainEventMessage first = item.peek();
                 return "data".equals(first.getMetaData().get("audit"));
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("An event with audit data");
+            public String toString() {
+                return "An event with audit data";
             }
         }));
 
-        verify(eventBus).publish(argThat(new TypeSafeMatcher<EventMessage>() {
+        verify(eventBus).publish(argThat(new ArgumentMatcher<>() {
 
             @Override
-            public boolean matchesSafely(EventMessage item) {
+            public boolean matches(EventMessage item) {
                 return "data".equals(item.getMetaData().get("audit"));
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("An event with audit data");
+            public String toString() {
+                return "An event with audit data";
             }
         }), isA(EventMessage.class));
     }

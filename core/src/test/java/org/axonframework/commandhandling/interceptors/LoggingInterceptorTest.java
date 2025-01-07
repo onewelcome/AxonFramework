@@ -16,22 +16,33 @@
 
 package org.axonframework.commandhandling.interceptors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.AdditionalMatchers.and;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.axonframework.commandhandling.GenericCommandMessage;
 import org.axonframework.commandhandling.InterceptorChain;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.Log4jLoggerAdapter;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
-
-import static org.junit.Assert.*;
-import static org.mockito.AdditionalMatchers.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -65,9 +76,9 @@ public class LoggingInterceptorTest {
 
         verify(mockLogger, atLeast(1)).isInfoEnabled();
         verify(mockLogger, times(2)).log(any(String.class), any(Priority.class), contains("[StubCommand]"),
-                                         any(Throwable.class));
+                                         isNull(Throwable.class));
         verify(mockLogger).log(any(String.class), any(Priority.class), and(contains("[StubCommand]"),
-                                                                           contains("[null]")), any(Throwable.class));
+                                                                           contains("[null]")), isNull(Throwable.class));
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -80,9 +91,9 @@ public class LoggingInterceptorTest {
 
         verify(mockLogger, atLeast(1)).isInfoEnabled();
         verify(mockLogger, times(2)).log(any(String.class), any(Priority.class), contains("[StubCommand]"),
-                                         any(Throwable.class));
+                                         isNull(Throwable.class));
         verify(mockLogger).log(any(String.class), any(Priority.class), and(contains("[StubCommand]"),
-                                                                           contains("[null]")), any(Throwable.class));
+                                                                           contains("[null]")), isNull(Throwable.class));
         verifyNoMoreInteractions(mockLogger);
     }
 
@@ -96,7 +107,7 @@ public class LoggingInterceptorTest {
         verify(mockLogger, atLeast(1)).isInfoEnabled();
         verify(mockLogger).log(any(String.class), eq(Level.INFO),
                                and(contains("[StubCommand]"), contains("[StubResponse]")),
-                               any(Throwable.class));
+                               isNull(Throwable.class));
     }
 
     @SuppressWarnings({"ThrowableInstanceNeverThrown"})

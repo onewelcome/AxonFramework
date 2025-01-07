@@ -16,14 +16,13 @@
 
 package org.axonframework.test.matchers;
 
-import org.junit.*;
-
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author Allard Buijze
@@ -35,14 +34,14 @@ public class MatchAllFieldFilterTest {
     @Test
     public void testAcceptWhenEmpty() throws Exception {
         assertTrue(new MatchAllFieldFilter(Collections.<FieldFilter>emptyList())
-                           .accept(MatchAllFieldFilterTest.class.getDeclaredField("field")));
+                           .accept("field"));
     }
 
     @Test
     public void testAcceptWhenAllAccept() throws Exception {
         assertTrue(new MatchAllFieldFilter(Arrays.<FieldFilter>asList(AllFieldsFilter.instance(),
                                                                       AllFieldsFilter.instance()))
-                           .accept(MatchAllFieldFilterTest.class.getDeclaredField("field")));
+                           .accept("field"));
     }
 
     @Test
@@ -50,10 +49,10 @@ public class MatchAllFieldFilterTest {
         assertFalse(new MatchAllFieldFilter(Arrays.asList(AllFieldsFilter.instance(), new FieldFilter() {
 
             @Override
-            public boolean accept(Field field) {
+            public boolean accept(String field) {
                 return false;
             }
         }))
-                            .accept(MatchAllFieldFilterTest.class.getDeclaredField("field")));
+                            .accept("field"));
     }
 }

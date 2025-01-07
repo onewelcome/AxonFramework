@@ -16,21 +16,44 @@
 
 package org.axonframework.unitofwork;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anySet;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.AggregateRoot;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventListener;
 import org.axonframework.testutils.MockException;
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -84,7 +107,7 @@ public class DefaultUnitOfWorkTest {
         UnitOfWork uow = DefaultUnitOfWork.startAndGet(mockTransactionManager);
         uow.registerListener(mockListener);
         verify(mockTransactionManager).startTransaction();
-        verifyZeroInteractions(mockListener);
+        verifyNoInteractions(mockListener);
 
         uow.commit();
 
@@ -106,13 +129,13 @@ public class DefaultUnitOfWorkTest {
         UnitOfWork uow = DefaultUnitOfWork.startAndGet(mockTransactionManager);
         uow.registerListener(mockListener);
         verify(mockTransactionManager).startTransaction();
-        verifyZeroInteractions(mockListener);
+        verifyNoInteractions(mockListener);
 
         uow.rollback();
 
         InOrder inOrder = inOrder(mockListener, mockTransactionManager);
         inOrder.verify(mockTransactionManager).rollbackTransaction(any());
-        inOrder.verify(mockListener).onRollback(eq(uow), any(Throwable.class));
+        inOrder.verify(mockListener).onRollback(eq(uow), isNull(Throwable.class));
         inOrder.verify(mockListener).onCleanup(uow);
         verifyNoMoreInteractions(mockListener, mockTransactionManager);
     }
@@ -190,9 +213,7 @@ public class DefaultUnitOfWorkTest {
     @Test
     public void testUnitOfWorkRolledBackOnCommitFailure_ErrorOnPrepareCommit() {
         UnitOfWorkListener mockListener = mock(UnitOfWorkListener.class);
-        doThrow(new MockException()).when(mockListener).onPrepareCommit(isA(UnitOfWork.class),
-                                                                        anySetOf(AggregateRoot.class),
-                                                                        anyListOf(EventMessage.class));
+        doThrow(new MockException()).when(mockListener).onPrepareCommit(isA(UnitOfWork.class), anySet(), anyList());
         testSubject.registerListener(mockListener);
         testSubject.start();
         try {
@@ -222,8 +243,7 @@ public class DefaultUnitOfWorkTest {
             assertEquals("Got an exception, but the wrong one", MockException.class, e.getClass());
             assertEquals("Got an exception, but the wrong one", "Mock", e.getMessage());
         }
-        verify(mockListener).onPrepareCommit(isA(UnitOfWork.class), anySetOf(AggregateRoot.class), anyListOf(
-                EventMessage.class));
+        verify(mockListener).onPrepareCommit(isA(UnitOfWork.class), anySet(), anyList());
         verify(mockListener).onRollback(isA(UnitOfWork.class), isA(RuntimeException.class));
         verify(mockListener, never()).afterCommit(isA(UnitOfWork.class));
         verify(mockListener).onCleanup(isA(UnitOfWork.class));
@@ -233,28 +253,20 @@ public class DefaultUnitOfWorkTest {
     @Test
     public void testUnitOfWorkRolledBackOnCommitFailure_ErrorOnDispatchEvents() {
         UnitOfWorkListener mockListener = mock(UnitOfWorkListener.class);
-        when(mockListener.onEventRegistered(isA(UnitOfWork.class), Matchers.<EventMessage<Object>>any()))
+        when(mockListener.onEventRegistered(isA(UnitOfWork.class), ArgumentMatchers.<EventMessage<Object>>any()))
                 .thenAnswer(new ReturnParameterAnswer(1));
 
         doThrow(new MockException()).when(mockEventBus).publish(isA(EventMessage.class));
         testSubject.start();
         testSubject.registerListener(mockListener);
-        testSubject.publishEvent(new GenericEventMessage<Object>(new Object()), mockEventBus);
-        try {
-            testSubject.commit();
-            fail("Expected exception");
-        } catch (RuntimeException e) {
-            assertThat(e, new ArgumentMatcher<RuntimeException>() {
-                @Override
-                public boolean matches(Object o) {
-                    return "Mock".equals(((RuntimeException) o).getMessage());
-                }
-            });
-            assertEquals("Got an exception, but the wrong one", MockException.class, e.getClass());
-            assertEquals("Got an exception, but the wrong one", "Mock", e.getMessage());
-        }
-        verify(mockListener).onPrepareCommit(isA(UnitOfWork.class), anySetOf(AggregateRoot.class),
-                                             anyListOf(EventMessage.class));
+        testSubject.publishEvent(new GenericEventMessage<>(new Object()), mockEventBus);
+
+        Throwable throwable = catchThrowable(() -> testSubject.commit());
+
+        assertThat(throwable)
+            .isInstanceOf(MockException.class)
+            .hasMessage("Mock");
+        verify(mockListener).onPrepareCommit(isA(UnitOfWork.class), anySet(), anyList());
         verify(mockListener).onRollback(isA(UnitOfWork.class), isA(RuntimeException.class));
         verify(mockListener, never()).afterCommit(isA(UnitOfWork.class));
         verify(mockListener).onCleanup(isA(UnitOfWork.class));
@@ -316,13 +328,13 @@ public class DefaultUnitOfWorkTest {
         verify(innerListener, never()).onCleanup(isA(UnitOfWork.class));
         outer.rollback();
         verify(outerListener, never()).onPrepareCommit(isA(UnitOfWork.class),
-                                                       anySetOf(AggregateRoot.class),
-                                                       anyListOf(EventMessage.class));
+                                                       anySet(),
+                                                       anyList());
 
         InOrder inOrder = inOrder(innerListener, outerListener);
         inOrder.verify(innerListener).onPrepareCommit(isA(UnitOfWork.class),
-                                                      anySetOf(AggregateRoot.class),
-                                                      anyListOf(EventMessage.class));
+                                                      anySet(),
+                                                      anyList());
 
         inOrder.verify(innerListener).onRollback(isA(UnitOfWork.class), (Throwable) isNull());
         inOrder.verify(outerListener).onRollback(isA(UnitOfWork.class), (Throwable) isNull());

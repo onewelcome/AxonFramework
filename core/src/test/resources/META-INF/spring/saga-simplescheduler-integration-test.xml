@@ -30,7 +30,7 @@
 
     <bean id="eventBus" class="org.axonframework.eventhandling.SimpleEventBus"/>
 
-    <axon:jpa-saga-repository id="sagaRepository"/>
+    <axon:jpa-saga-repository id="sagaRepository" saga-serializer="serializer"/>
 
     <axon:saga-manager id="sagaManager" saga-repository="sagaRepository" event-bus="eventBus">
         <axon:types>
@@ -57,4 +57,7 @@
             </bean>
         </constructor-arg>
     </bean>
+
+    <!-- Serializer with proper security configuration -->
+    <bean class="org.axonframework.testutils.XStreamSerializerSpringConfiguration"/>
 </beans>

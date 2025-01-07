@@ -16,6 +16,12 @@
 
 package org.axonframework.eventhandling.amqp.spring;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.Cluster;
@@ -23,17 +29,14 @@ import org.axonframework.eventhandling.amqp.DefaultAMQPMessageConverter;
 import org.axonframework.eventhandling.io.EventMessageWriter;
 import org.axonframework.serializer.Serializer;
 import org.axonframework.serializer.xml.XStreamSerializer;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.junit.internal.matchers.*;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.nio.charset.Charset;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -52,15 +55,15 @@ public class ClusterMessageListenerTest {
         outputStream.writeEventMessage(new GenericEventMessage<String>("Event"));
         testSubject.onMessage(new Message(baos.toByteArray(), new MessageProperties()));
 
-        verify(cluster).publish(argThat(new TypeSafeMatcher<EventMessage>() {
+        verify(cluster).publish(argThat(new ArgumentMatcher<EventMessage>() {
             @Override
-            public boolean matchesSafely(EventMessage item) {
+            public boolean matches(EventMessage item) {
                 return "Event".equals(item.getPayload());
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("EventMessage with String payload");
+            public String toString() {
+                return "EventMessage with String payload";
             }
         }));
     }

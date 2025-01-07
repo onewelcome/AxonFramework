@@ -16,11 +16,11 @@
 
 package org.axonframework.test.matchers;
 
-import org.axonframework.test.FixtureExecutionException;
-import org.junit.*;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import org.axonframework.test.FixtureExecutionException;
+import org.junit.Test;
 
 /**
  * @author Allard Buijze
@@ -33,15 +33,15 @@ public class IgnoreFieldTest {
     @Test
     public void testAcceptOtherFields_ClassStringConstructor() throws Exception {
         IgnoreField testSubject = new IgnoreField(IgnoreFieldTest.class, "ignoredField");
-        assertTrue(testSubject.accept(IgnoreFieldTest.class.getDeclaredField("field")));
-        assertFalse(testSubject.accept(IgnoreFieldTest.class.getDeclaredField("ignoredField")));
+        assertTrue(testSubject.accept("field"));
+        assertFalse(testSubject.accept("ignoredField"));
     }
 
     @Test
     public void testAcceptOtherFields_FieldConstructor() throws Exception {
-        IgnoreField testSubject = new IgnoreField(IgnoreFieldTest.class.getDeclaredField("ignoredField"));
-        assertTrue(testSubject.accept(IgnoreFieldTest.class.getDeclaredField("field")));
-        assertFalse(testSubject.accept(IgnoreFieldTest.class.getDeclaredField("ignoredField")));
+        IgnoreField testSubject = new IgnoreField(IgnoreFieldTest.class, "ignoredField");
+        assertTrue(testSubject.accept("field"));
+        assertFalse(testSubject.accept("ignoredField"));
     }
 
     @Test(expected = FixtureExecutionException.class)

@@ -24,6 +24,9 @@
 
     <context:annotation-config/>
 
+    <!-- Serializer with proper security configuration -->
+    <bean class="org.axonframework.integrationtests.SpringConfiguration"/>
+
     <axon:saga-manager id="sagaManager" event-bus="eventBus" saga-repository="jpaSagaRepository">
         <axon:async transaction-manager="transactionManager"/>
         <axon:types>
@@ -31,7 +34,7 @@
         </axon:types>
     </axon:saga-manager>
 
-    <axon:jpa-saga-repository id="jpaSagaRepository" use-explicit-flush="true"/>
+    <axon:jpa-saga-repository id="jpaSagaRepository" use-explicit-flush="true" saga-serializer="serializer"/>
 
     <bean class="org.axonframework.eventhandling.annotation.AnnotationEventListenerBeanPostProcessor"/>
 
@@ -75,13 +78,14 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-        <property name="driverClass" value="${jdbc.driverclass}"/>
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+        <property name="driverClassName" value="${jdbc.driverclass}"/>
         <property name="jdbcUrl" value="${jdbc.url}"/>
-        <property name="user" value="${jdbc.username}"/>
+        <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
-        <property name="maxPoolSize" value="50"/>
-        <property name="minPoolSize" value="1"/>
+        <property name="maximumPoolSize" value="150"/>
+        <property name="minimumIdle" value="50"/>
+        <property name="poolName" value="HikariCP"/>
     </bean>
 
 </beans>

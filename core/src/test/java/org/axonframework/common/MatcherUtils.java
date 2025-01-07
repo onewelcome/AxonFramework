@@ -16,11 +16,10 @@
 
 package org.axonframework.common;
 
-import org.axonframework.domain.EventMessage;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
+import static org.mockito.ArgumentMatchers.argThat;
 
-import static org.mockito.Matchers.*;
+import org.axonframework.domain.EventMessage;
+import org.mockito.ArgumentMatcher;
 
 /**
  *
@@ -28,21 +27,15 @@ import static org.mockito.Matchers.*;
 public class MatcherUtils {
 
     public static EventMessage isEventWith(final Class<?> payloadType) {
-        return argThat(new BaseMatcher<EventMessage>() {
+        return argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matches(Object o) {
-                if (!(o instanceof EventMessage)) {
-                    return false;
-                }
-                EventMessage that = (EventMessage) o;
-                return payloadType.isInstance(that.getPayload());
+            public boolean matches(EventMessage eventMessage) {
+                return payloadType.isInstance(eventMessage.getPayload());
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("Event with payload of type [");
-                description.appendValue(payloadType.getName());
-                description.appendText("]");
+            public String toString() {
+                return String.format("Event with payload of type [%s]", payloadType.getName());
             }
         });
     }

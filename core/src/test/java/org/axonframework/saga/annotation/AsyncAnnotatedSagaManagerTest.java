@@ -16,6 +16,20 @@
 
 package org.axonframework.saga.annotation;
 
+import static org.axonframework.domain.GenericEventMessage.asEventMessage;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.axonframework.common.AxonConfigurationException;
@@ -27,7 +41,11 @@ import org.axonframework.eventhandling.EventProcessingMonitor;
 import org.axonframework.saga.Saga;
 import org.axonframework.saga.repository.inmemory.InMemorySagaRepository;
 import org.axonframework.unitofwork.TransactionManager;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockito.internal.stubbing.answers.CallsRealMethods;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -36,13 +54,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.axonframework.domain.GenericEventMessage.asEventMessage;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -130,7 +148,7 @@ public class AsyncAnnotatedSagaManagerTest {
         assertTrue("Service refused to stop in 10 seconds", executorService.awaitTermination(10, TimeUnit.SECONDS));
 
         verify(transactionManager, times(3)).startTransaction();
-        verify(transactionManager, times(3)).commitTransaction(anyObject());
+        verify(transactionManager, times(3)).commitTransaction(any());
     }
 
     @Test(timeout = 10000, expected = AxonConfigurationException.class)

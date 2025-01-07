@@ -16,6 +16,13 @@
 
 package org.axonframework.test;
 
+import static java.lang.String.format;
+import static org.axonframework.common.IdentifierValidator.validateIdentifier;
+import static org.axonframework.common.ReflectionUtils.ensureAccessible;
+import static org.axonframework.common.ReflectionUtils.explicitlyUnequal;
+import static org.axonframework.common.ReflectionUtils.fieldsOf;
+import static org.axonframework.common.ReflectionUtils.hasEqualsMethod;
+
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandHandler;
@@ -66,10 +73,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static java.lang.String.format;
-import static org.axonframework.common.IdentifierValidator.validateIdentifier;
-import static org.axonframework.common.ReflectionUtils.*;
 
 /**
  * A test fixture that allows the execution of given-when-then style test cases. For detailed usage information, see
@@ -337,7 +340,7 @@ public class GivenWhenThenTestFixture<T extends EventSourcedAggregateRoot>
         } else if (workingValue != null && comparedEntries.add(new ComparationEntry(workingValue, eventSourcedValue))
                 && !hasEqualsMethod(workingValue.getClass())) {
             for (Field field : fieldsOf(workingValue.getClass())) {
-                if (fieldFilter.accept(field) &&
+                if (fieldFilter.accept(field.getName()) &&
                         !Modifier.isStatic(field.getModifiers())
                         && !Modifier.isTransient(field.getModifiers())) {
                     ensureAccessible(field);

@@ -16,15 +16,17 @@
 
 package org.axonframework.springmessaging.eventbus;
 
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.EventListener;
 import org.axonframework.springmessaging.StubDomainEvent;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.*;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 import org.springframework.messaging.support.GenericMessage;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -41,15 +43,15 @@ public class MessageHandlerAdapterTest {
         adapter.handleMessage(new GenericMessage<StubDomainEvent>(payload));
         adapter.handleMessage(new GenericMessage<StubDomainEvent>(new StubDomainEvent()));
 
-        verify(mockEventListener, times(1)).handle(argThat(new BaseMatcher<EventMessage>() {
+        verify(mockEventListener, times(1)).handle(argThat(new ArgumentMatcher<EventMessage<?>>() {
             @Override
-            public boolean matches(Object o) {
-                return ((o instanceof EventMessage) && ((EventMessage) o).getPayload().equals(payload));
+            public boolean matches(EventMessage<?> eventMessage) {
+                return (eventMessage.getPayload().equals(payload));
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("Event with correct payload");
+            public String toString() {
+                return "Event with correct payload";
             }
         }));
     }

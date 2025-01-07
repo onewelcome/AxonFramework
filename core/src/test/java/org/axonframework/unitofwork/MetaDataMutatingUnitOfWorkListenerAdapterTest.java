@@ -16,7 +16,14 @@
 
 package org.axonframework.unitofwork;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.WildcardTypePermission;
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericDomainEventMessage;
@@ -24,7 +31,10 @@ import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.domain.StubAggregate;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.EventListener;
-import org.junit.*;
+import org.axonframework.testutils.XStreamSerializerFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,9 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -173,7 +180,8 @@ public class MetaDataMutatingUnitOfWorkListenerAdapterTest {
 
         assertEquals(1, publishedMessages.size());
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XStream xStream = new XStream();
+        final XStream xStream = XStreamSerializerFactory.createXStream(GenericEventMessage.class);
+        xStream.addPermission(new WildcardTypePermission(new String[]{ "org.joda.time.**" }));
         xStream.toXML(publishedMessages.get(0), baos);
         EventMessage actual = (EventMessage) xStream.fromXML(new ByteArrayInputStream(baos.toByteArray()));
 

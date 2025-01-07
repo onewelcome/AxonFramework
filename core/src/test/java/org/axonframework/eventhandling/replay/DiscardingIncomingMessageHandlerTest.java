@@ -16,12 +16,17 @@
 
 package org.axonframework.eventhandling.replay;
 
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import org.axonframework.domain.GenericDomainEventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.Cluster;
-import org.junit.*;
-
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Allard Buijze
@@ -58,6 +63,6 @@ public class DiscardingIncomingMessageHandlerTest {
         testSubject.releaseMessage(mockCluster, new GenericDomainEventMessage<String>("aggregate", 0, "Testing"));
 
         // the cluster name may be asked for logging
-        verifyZeroInteractions(mockCluster);
+        verifyNoInteractions(mockCluster);
     }
 }

@@ -16,13 +16,18 @@
 
 package org.axonframework.domain;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.reflection.PureJavaReflectionProvider;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 import org.axonframework.serializer.AnnotationRevisionResolver;
 import org.axonframework.serializer.SerialVersionUIDRevisionResolver;
 import org.axonframework.serializer.SimpleSerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
-import org.junit.*;
+import org.axonframework.testutils.XStreamSerializerFactory;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,8 +36,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Allard Buijze
@@ -44,6 +47,11 @@ public class JavaSerializationTest {
     @Test
     public void testSerialize_XStreamWithPureJavaReflectionProvider() {
         XStream xstream = new XStream(new PureJavaReflectionProvider());
+        xstream.addPermission(new ExplicitTypePermission(new Class[]{
+            StubAnnotatedAggregate.class,
+            GenericDomainEventMessage.class,
+            StubDomainEvent.class
+        }));
         XStreamSerializer serializer = new XStreamSerializer(UTF8, xstream, new SerialVersionUIDRevisionResolver());
 
         StubAnnotatedAggregate aggregateRoot = new StubAnnotatedAggregate(UUID.randomUUID());
@@ -59,7 +67,11 @@ public class JavaSerializationTest {
 
     @Test
     public void testSerialize_XStreamWithDefaultReflectionProvider() {
-        XStream xstream = new XStream();
+        XStream xstream = XStreamSerializerFactory.createXStream(
+            StubAnnotatedAggregate.class,
+            GenericDomainEventMessage.class,
+            StubDomainEvent.class
+        );
         XStreamSerializer serializer = new XStreamSerializer(UTF8, xstream, new AnnotationRevisionResolver());
 
         StubAnnotatedAggregate aggregateRoot = new StubAnnotatedAggregate(UUID.randomUUID());

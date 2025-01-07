@@ -16,6 +16,9 @@
 
 package org.axonframework.test.saga;
 
+import static java.lang.String.format;
+import static org.axonframework.test.saga.DescriptionUtils.describe;
+
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.test.AxonAssertionError;
 import org.axonframework.test.matchers.EqualFieldsMatcher;
@@ -28,9 +31,6 @@ import org.hamcrest.StringDescription;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import static java.lang.String.format;
-import static org.axonframework.test.saga.DescriptionUtils.describe;
 
 /**
  * Helper class for validation of dispatched commands.
@@ -132,13 +132,7 @@ public class CommandValidator {
             }
             EqualFieldsMatcher<Object> matcher = new EqualFieldsMatcher<Object>(expected, fieldFilter);
             if (!matcher.matches(actual)) {
-                throw new AxonAssertionError(format("Unexpected command at index %s (0-based). "
-                                                            + "Field value of '%s.%s', expected <%s>, but got <%s>",
-                                                    commandIndex,
-                                                    expected.getClass().getSimpleName(),
-                                                    matcher.getFailedField().getName(),
-                                                    matcher.getFailedFieldExpectedValue(),
-                                                    matcher.getFailedFieldActualValue()));
+                throw new AxonAssertionError(matcher.getErrorMessage());
             }
         }
     }

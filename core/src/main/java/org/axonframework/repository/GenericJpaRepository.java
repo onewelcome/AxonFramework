@@ -16,14 +16,14 @@
 
 package org.axonframework.repository;
 
+import static java.lang.String.format;
+
 import org.axonframework.common.Assert;
 import org.axonframework.common.jpa.EntityManagerProvider;
 import org.axonframework.common.jpa.SimpleEntityManagerProvider;
 import org.axonframework.domain.AggregateRoot;
 
-import javax.persistence.EntityManager;
-
-import static java.lang.String.format;
+import jakarta.persistence.EntityManager;
 
 /**
  * Generic repository implementation that stores JPA annotated aggregates. These aggregates must implement {@link
@@ -141,7 +141,7 @@ public class GenericJpaRepository<T extends AggregateRoot> extends LockingReposi
      *
      * @param forceFlushOnSave whether or not to flush the EntityManager after each save. Defaults to
      *                         <code>true</code>.
-     * @see javax.persistence.EntityManager#flush()
+     * @see jakarta.persistence.EntityManager#flush()
      */
     public void setForceFlushOnSave(boolean forceFlushOnSave) {
         this.forceFlushOnSave = forceFlushOnSave;

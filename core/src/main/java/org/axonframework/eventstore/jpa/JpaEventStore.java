@@ -16,6 +16,9 @@
 
 package org.axonframework.eventstore.jpa;
 
+import static org.axonframework.common.IdentifierValidator.validateIdentifier;
+import static org.axonframework.upcasting.UpcastUtils.upcastAndDeserialize;
+
 import org.axonframework.common.Assert;
 import org.axonframework.common.io.IOUtils;
 import org.axonframework.common.jdbc.PersistenceExceptionResolver;
@@ -45,17 +48,14 @@ import org.axonframework.upcasting.UpcasterChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
 import javax.sql.DataSource;
+import jakarta.persistence.EntityManager;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-
-import static org.axonframework.common.IdentifierValidator.validateIdentifier;
-import static org.axonframework.upcasting.UpcastUtils.upcastAndDeserialize;
 
 /**
  * An EventStore implementation that uses JPA to store DomainEvents in a database. The actual DomainEvent is stored as

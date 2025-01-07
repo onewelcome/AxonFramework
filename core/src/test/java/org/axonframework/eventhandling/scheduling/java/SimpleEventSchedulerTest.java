@@ -16,17 +16,27 @@
 
 package org.axonframework.eventhandling.scheduling.java;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.scheduling.ScheduleToken;
 import org.axonframework.saga.Saga;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.joda.time.Duration;
-import org.junit.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.quartz.SchedulerException;
 
 import java.io.ByteArrayInputStream;
@@ -39,9 +49,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -124,7 +131,7 @@ public class SimpleEventSchedulerTest {
         return new GenericEventMessage<Object>(new Object());
     }
 
-    private static class EqualPayloadMatcher extends BaseMatcher<EventMessage> {
+    private static class EqualPayloadMatcher implements ArgumentMatcher<EventMessage> {
 
         private final EventMessage<Object> event2;
 
@@ -133,18 +140,19 @@ public class SimpleEventSchedulerTest {
         }
 
         @Override
-        public boolean matches(Object o) {
-            return (o instanceof EventMessage)
-                    && event2.getPayload().equals(((EventMessage) o).getPayload())
-                    && event2.getMetaData().equals(((EventMessage) o).getMetaData());
+        public boolean matches(EventMessage eventMessage) {
+            return (eventMessage != null)
+                    && event2.getPayload().equals(eventMessage.getPayload())
+                    && event2.getMetaData().equals(eventMessage.getMetaData());
         }
 
         @Override
-        public void describeTo(Description description) {
-            description.appendText("an EventMessage with payload equal to ")
-                       .appendValue(event2.getPayload())
-                       .appendText(" and MetaData equal to")
-                       .appendValue(event2.getMetaData());
+        public String toString() {
+            return String.format(
+                "an EventMessage with payload equal to %s  and MetaData equal to %s"
+                , event2.getPayload(),
+                event2.getMetaData()
+            );
         }
     }
 }

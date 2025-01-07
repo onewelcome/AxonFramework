@@ -16,13 +16,14 @@
 
 package org.axonframework.integrationtests.domain;
 
+import static junit.framework.Assert.assertEquals;
+
 import org.axonframework.serializer.SerializedObject;
 import org.axonframework.serializer.xml.XStreamSerializer;
-import org.junit.*;
+import org.axonframework.testutils.XStreamSerializerFactory;
+import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * Test that reproduces a problem where a structured aggregate (containing multiple entities) is not serialized
@@ -39,7 +40,7 @@ public class StructuredAggregateSerializationTest {
         assertEquals(2, aggregateRoot.getInvocations());
         assertEquals(2, aggregateRoot.getEntity().getInvocations());
         aggregateRoot.commitEvents();
-        XStreamSerializer serializer = new XStreamSerializer();
+        XStreamSerializer serializer = XStreamSerializerFactory.create(StructuredAggregateRoot.class);
         SerializedObject<byte[]> serialized = serializer.serialize(aggregateRoot, byte[].class);
         StructuredAggregateRoot deserializedAggregate = (StructuredAggregateRoot) serializer.deserialize(serialized);
 

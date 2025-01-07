@@ -27,20 +27,20 @@ import org.axonframework.serializer.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityNotFoundException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * JPA implementation of the Saga Repository. It uses an {@link javax.persistence.EntityManager} to persist the actual
+ * JPA implementation of the Saga Repository. It uses an {@link jakarta.persistence.EntityManager} to persist the actual
  * saga in a backing
  * store.
  * <p/>
- * After each operations that modified the backing store, {@link javax.persistence.EntityManager#flush()} is invoked to
+ * After each operations that modified the backing store, {@link jakarta.persistence.EntityManager#flush()} is invoked to
  * ensure the store contains the last modifications. To override this behavior, see {@link }
  *
  * @author Allard Buijze
@@ -244,7 +244,7 @@ public class JpaSagaRepository extends AbstractSagaRepository {
     }
 
     /**
-     * Sets whether or not to do an explicit {@link javax.persistence.EntityManager#flush()} after each data modifying
+     * Sets whether or not to do an explicit {@link jakarta.persistence.EntityManager#flush()} after each data modifying
      * operation on the backing storage. Default to <code>true</code>
      *
      * @param useExplicitFlush <code>true</code> to force flush, <code>false</code> otherwise.

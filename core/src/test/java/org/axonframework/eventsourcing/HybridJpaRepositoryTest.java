@@ -16,6 +16,17 @@
 
 package org.axonframework.eventsourcing;
 
+import static org.axonframework.common.MatcherUtils.isEventWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.StubDomainEvent;
@@ -25,23 +36,20 @@ import org.axonframework.eventstore.EventStore;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.junit.runner.*;
-import org.mockito.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.UUID;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import static org.axonframework.common.MatcherUtils.isEventWith;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -178,20 +186,19 @@ public class HybridJpaRepositoryTest {
     }
 
     private DomainEventStream streamContaining(final long expectedCount) {
-        return argThat(new BaseMatcher<DomainEventStream>() {
+        return argThat(new ArgumentMatcher<>() {
 
             private Long previousCount = null;
 
             @Override
-            public boolean matches(Object o) {
+            public boolean matches(DomainEventStream domainEventStream) {
                 if (previousCount != null) {
                     return previousCount.equals(expectedCount);
                 }
                 long counter = 0;
-                if (o instanceof DomainEventStream) {
-                    DomainEventStream events = (DomainEventStream) o;
-                    while (events.hasNext()) {
-                        events.next();
+                if (domainEventStream != null) {
+                    while (domainEventStream.hasNext()) {
+                        domainEventStream.next();
                         counter++;
                     }
                 }
@@ -200,10 +207,8 @@ public class HybridJpaRepositoryTest {
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("DomainEventStream containing");
-                description.appendValue(expectedCount);
-                description.appendText("events");
+            public String toString() {
+                return String.format("DomainEventStream containing %d events", expectedCount);
             }
         });
     }

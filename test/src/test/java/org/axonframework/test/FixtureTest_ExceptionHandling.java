@@ -71,7 +71,7 @@ public class FixtureTest_ExceptionHandling {
 
     private static abstract class AbstractMyAggregateCommand {
 		@TargetAggregateIdentifier
-		public final String id;
+		protected final String id;
 
 		protected AbstractMyAggregateCommand(String id) {
 			this.id = id;
@@ -103,7 +103,7 @@ public class FixtureTest_ExceptionHandling {
 	}
 
 	private static class MyAggregateCreatedEvent {
-		public final String id;
+		private final String id;
 
 		public MyAggregateCreatedEvent(String id) {
 			this.id = id;

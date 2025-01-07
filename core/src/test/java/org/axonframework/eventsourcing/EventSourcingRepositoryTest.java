@@ -16,11 +16,23 @@
 
 package org.axonframework.eventsourcing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.domain.DomainEventMessage;
 import org.axonframework.domain.DomainEventStream;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericDomainEventMessage;
-import org.axonframework.domain.Message;
 import org.axonframework.domain.MetaData;
 import org.axonframework.domain.SimpleDomainEventStream;
 import org.axonframework.domain.StubDomainEvent;
@@ -31,21 +43,20 @@ import org.axonframework.repository.ConflictingAggregateVersionException;
 import org.axonframework.unitofwork.CurrentUnitOfWork;
 import org.axonframework.unitofwork.DefaultUnitOfWork;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  * @author Allard Buijze
@@ -130,8 +141,7 @@ public class EventSourcingRepositoryTest {
                 ), event2, event3));
         testSubject.setConflictResolver(conflictResolver);
         TestAggregate actual = testSubject.load(identifier, 1L);
-        verify(conflictResolver, never()).resolveConflicts(anyListOf(DomainEventMessage.class), anyListOf(
-                DomainEventMessage.class));
+        verify(conflictResolver, never()).resolveConflicts(anyList(), anyList());
         final StubDomainEvent appliedEvent = new StubDomainEvent();
         actual.apply(appliedEvent);
 
@@ -141,18 +151,16 @@ public class EventSourcingRepositoryTest {
     }
 
     private List<DomainEventMessage> payloadsEqual(final StubDomainEvent expectedEvent) {
-        return argThat(new BaseMatcher<List<DomainEventMessage>>() {
+        return argThat(new ArgumentMatcher<>() {
             @Override
-            public boolean matches(Object o) {
-                return o instanceof List && ((List) o).size() >= 0
-                        && ((Message) ((List) o).get(0)).getPayload().equals(expectedEvent);
+            public boolean matches(List<DomainEventMessage> domainEventMessages) {
+                return domainEventMessages != null && domainEventMessages.size() >= 0
+                        && domainEventMessages.get(0).getPayload().equals(expectedEvent);
             }
 
             @Override
-            public void describeTo(Description description) {
-                description.appendText("List with an event with a")
-                           .appendText(expectedEvent.getClass().getName())
-                           .appendText(" payload");
+            public String toString() {
+                return String.format("List with an event with a %s payload", expectedEvent);
             }
         });
     }
@@ -223,14 +231,12 @@ public class EventSourcingRepositoryTest {
                                             )));
         testSubject.setConflictResolver(conflictResolver);
         TestAggregate actual = testSubject.load(identifier, 3L);
-        verify(conflictResolver, never()).resolveConflicts(anyListOf(DomainEventMessage.class), anyListOf(
-                DomainEventMessage.class));
+        verify(conflictResolver, never()).resolveConflicts(anyList(), anyList());
         actual.apply(new StubDomainEvent());
 
         CurrentUnitOfWork.commit();
 
-        verify(conflictResolver, never()).resolveConflicts(anyListOf(DomainEventMessage.class), anyListOf(
-                DomainEventMessage.class));
+        verify(conflictResolver, never()).resolveConflicts(anyList(), anyList());
     }
 
     @Test

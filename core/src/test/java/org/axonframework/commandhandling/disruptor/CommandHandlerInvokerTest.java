@@ -1,5 +1,16 @@
 package org.axonframework.commandhandling.disruptor;
 
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.axonframework.cache.Cache;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.CommandHandlerInterceptor;
@@ -16,15 +27,13 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
 import org.axonframework.eventstore.EventStore;
 import org.axonframework.repository.Repository;
 import org.axonframework.unitofwork.UnitOfWork;
-import org.junit.*;
-import org.mockito.internal.stubbing.answers.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.internal.stubbing.answers.ReturnsArgumentAt;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.Collections;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 /**
  *
@@ -68,7 +77,7 @@ public class CommandHandlerInvokerTest {
                 return repository.load(aggregateIdentifier);
             }
         });
-        when(mockEventStore.readEvents(anyString(), anyObject()))
+        when(mockEventStore.readEvents(anyString(), any()))
                 .thenReturn(new SimpleDomainEventStream(
                         new GenericDomainEventMessage(aggregateIdentifier, 0, aggregateIdentifier)));
         testSubject.onEvent(commandHandlingEntry, 0, true);

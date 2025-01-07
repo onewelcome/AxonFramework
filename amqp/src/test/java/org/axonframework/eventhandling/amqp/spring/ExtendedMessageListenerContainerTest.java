@@ -16,16 +16,27 @@
 
 package org.axonframework.eventhandling.amqp.spring;
 
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 
 import java.io.IOException;
-
-import static org.mockito.Mockito.*;
+import java.util.Map;
 
 /**
  * @author Allard Buijze
@@ -57,7 +68,7 @@ public class ExtendedMessageListenerContainerTest {
         verify(channel, never()).basicConsume(isA(String.class), anyBoolean(), isA(Consumer.class));
         verify(channel, never()).basicConsume(isA(String.class), anyBoolean(), anyString(), isA(Consumer.class));
         verify(channel, never()).basicConsume(isA(String.class), anyBoolean(), anyString(), anyBoolean(), eq(false), anyMap(), isA(Consumer.class));
-        verify(channel).basicConsume(isA(String.class), anyBoolean(), anyString(), anyBoolean(), eq(true), anyMap(), isA(Consumer.class));
+        verify(channel).basicConsume(isA(String.class), anyBoolean(), anyString(), anyBoolean(), eq(true), isNull(Map.class), isA(Consumer.class));
     }
 
     @Test
