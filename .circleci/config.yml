@@ -1,0 +1,58 @@
+version: 2.1
+
+orbs:
+  onegini-build: onegini/onegini-build@3
+
+shared: &shared
+  component_type: library
+  context: dev-context
+  executor:
+    name: onegini-build/maven-builder
+    tag: "17.0"
+  projects: core,test
+
+
+tags_only: &tags_only
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /.*/
+
+tags_and_branches_only: &tags_and_branches_only
+  filters:
+    branches:
+      only: /.*/
+    tags:
+      only: /.*/
+
+workflows:
+  version: 2
+  library-workflow:
+    jobs:
+      - onegini-build/build-install:
+          name: build
+          <<: *shared
+          <<: *tags_and_branches_only
+          skip_tests: true
+
+      - onegini-build/test:
+          name: test
+          <<: *shared
+          <<: *tags_and_branches_only
+          requires:
+            - build
+
+      - onegini-build/deploy:
+          name: deploy
+          <<: *shared
+          <<: *tags_and_branches_only
+          requires:
+            - build
+            - test
+
+      - onegini-build/notify-released:
+          context: dev-context
+          <<: *tags_only
+          requires:
+            - deploy
